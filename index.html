@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>塔防遊戲</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ══ 選關卡介面 ══ -->
+  <div id="level-select-screen">
+    <h1>⚔️ 塔防遊戲</h1>
+    <p class="subtitle">選擇關卡開始挑戰</p>
+
+    <div id="level-grid">
+
+      <div class="level-card" onclick="startLevel(1)">
+        <div class="level-badge">01</div>
+        <div class="level-name">新手村</div>
+        <div class="level-diff diff-easy">★☆☆ 簡單</div>
+        <div class="level-desc">4波步兵，熟悉基本操作</div>
+        <div class="level-meta">
+          <span>👾 ×10</span>
+          <span>🌊 20波</span>
+          <span>💰 300</span>
+        </div>
+        <div class="level-start-btn">開始</div>
+      </div>
+
+      <div class="level-card" onclick="startLevel(2)">
+        <div class="level-badge">02</div>
+        <div class="level-name">荒野交鋒</div>
+        <div class="level-diff diff-normal">★★☆ 普通</div>
+        <div class="level-desc">步兵與快衝兵混合出現</div>
+        <div class="level-meta">
+          <span>👾💨 混合</span>
+          <span>🌊 20波</span>
+          <span>💰 300</span>
+        </div>
+        <div class="level-start-btn">開始</div>
+      </div>
+
+      <div class="level-card" onclick="startLevel(3)">
+        <div class="level-badge">03</div>
+        <div class="level-name">鋼鐵洪流</div>
+        <div class="level-diff diff-hard">★★★ 困難</div>
+        <div class="level-desc">重甲兵大量湧入，資源緊張</div>
+        <div class="level-meta">
+          <span>🛡️ 重甲</span>
+          <span>🌊 20波</span>
+          <span>💰 300</span>
+        </div>
+        <div class="level-start-btn">開始</div>
+      </div>
+
+      <div class="level-card" onclick="startLevel(4)">
+        <div class="level-badge">04</div>
+        <div class="level-name">極限突破</div>
+        <div class="level-diff diff-extreme">💀 極限</div>
+        <div class="level-desc">全敵種同時登場，考驗終極策略</div>
+        <div class="level-meta">
+          <span>👾💨🛡️ 全敵</span>
+          <span>🌊 20波</span>
+          <span>💰 300</span>
+        </div>
+        <div class="level-start-btn">開始</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ 遊戲主畫面 ══ -->
+  <div id="game-screen" style="display:none; flex-direction:column; align-items:center; gap:10px;">
+
+    <div id="game-header">
+      <h1>⚔️ 塔防遊戲</h1>
+      <button id="btn-back" onclick="backToSelect()">← 返回選關</button>
+    </div>
+
+    <!-- 狀態列 -->
+    <div id="status-bar">
+      <span>🏰 堡壘 HP：<strong id="ui-fortress-hp">未建造</strong><span id="ui-fortress-maxhp"></span></span>
+      <span>💰 金幣：<strong id="ui-gold">300</strong></span>
+<span>🌊 波次：<strong id="ui-wave">0 / 5</strong></span>
+      <button id="btn-wave">⏩ 提前開始 (Enter)</button>
+    </div>
+
+    <!-- 塔選擇面板 -->
+    <div id="tower-panel">
+      <span class="panel-label">選擇防禦塔：</span>
+      <button class="tower-btn active" id="btn-archer" onclick="selectTower('archer')">
+        🏹 弓箭手<br><small>50金 · 範圍2.5 · 快速</small>
+      </button>
+      <button class="tower-btn" id="btn-mage" onclick="selectTower('mage')">
+        🔮 法師<br><small>100金 · 範圍2 · 範圍傷害</small>
+      </button>
+      <button class="tower-btn" id="btn-cannon" onclick="selectTower('cannon')">
+        💣 大砲<br><small>150金 · 範圍3 · 高傷害</small>
+      </button>
+      <button class="tower-btn farm-btn" id="btn-farm" onclick="selectTower('farm')">
+        🌾 農場<br><small>80金 · 每8s +8金</small>
+      </button>
+      <button class="tower-btn ice-btn" id="btn-ice" onclick="selectTower('ice')">
+        🧊 冰塔<br><small>110金 · 減速65%</small>
+      </button>
+      <button class="tower-btn lightning-btn" id="btn-lightning" onclick="selectTower('lightning')">
+        ⚡ 電塔<br><small>160金 · 鏈式×3</small>
+      </button>
+      <button class="tower-btn mine-btn" id="btn-mine" onclick="selectTower('mine')">
+        ⛏️ 礦坑<br><small>160金 · 每10s +22金</small>
+      </button>
+      <button class="tower-btn market-btn" id="btn-market" onclick="selectTower('market')">
+        🏪 市場<br><small>130金 · 擊殺+6金</small>
+      </button>
+      <button class="tower-btn training-btn" id="btn-training" onclick="selectTower('training')">
+        🏋️ 訓練場<br><small>200金 · 生產己方士兵</small>
+      </button>
+      <button class="tower-btn lab-btn" id="btn-lab" onclick="selectTower('lab')">
+        🔬 研發所<br><small>220金 · 研發新兵種</small>
+      </button>
+      <button class="tower-btn fortress-btn" id="btn-fortress" onclick="selectTower('fortress')">
+        🏰 堡壘<br><small>200金 · HP600 · 唯一</small>
+      </button>
+      <div id="enemy-info">
+        <span class="panel-label">敵人：</span>
+        <span>👾 步兵</span>
+        <span>💨 快衝兵</span>
+        <span>🛡️ 重甲兵</span>
+        <span title="被打死後復活一次">💀 重生兵</span>
+        <span title="塔無法鎖定，只有主角/己方士兵可攻擊">👻 幽靈兵</span>
+      </div>
+      <div id="hero-info">
+        <span class="panel-label">🧙 主角：</span>
+        <span>WASD / 方向鍵 移動</span>
+        <span>·</span>
+        <span>靠近格子才能建塔</span>
+        <span>·</span>
+        <span>自動攻擊範圍內敵人</span>
+      </div>
+    </div>
+
+    <div id="map-container">
+      <canvas id="gameCanvas"></canvas>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+  <script>
+    function startLevel(levelNum) {
+      document.getElementById('level-select-screen').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'flex';
+      initGame(levelNum);
+    }
+
+    function backToSelect() {
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('level-select-screen').style.display = 'flex';
+      cancelAnimationFrame(animFrameId);
+    }
+
+    // UI 更新
+    function updateUI() {
+      const fortTower = typeof towers!=='undefined'
+        ? towers.find(t=>typeof TOWER_TYPES!=='undefined'&&TOWER_TYPES[t.type]?.isFortress)
+        : null;
+      document.getElementById('ui-fortress-hp').textContent = fortTower ? `${Math.ceil(fortTower.hp)} / ${fortTower.maxHp}` : '未建造';
+      document.getElementById('ui-fortress-maxhp').textContent = '';
+      document.getElementById('ui-gold').textContent  = gold;
+document.getElementById('ui-wave').textContent  = `${wave} / ${WAVES.length}`;
+      const waveBtn = document.getElementById('btn-wave');
+      const canSkip = !waveActive && wave < WAVES.length && !gameOver && nextWaveAt > 0;
+      waveBtn.disabled = !canSkip;
+      if (wave >= WAVES.length && !waveActive) {
+        waveBtn.textContent = '🏆 全部完成！';
+      } else if (waveActive) {
+        waveBtn.textContent = '⚔️ 波次進行中...';
+      } else if (nextWaveCountdown > 0) {
+        waveBtn.textContent = `⏩ 提前開始 (${nextWaveCountdown}s)`;
+      } else {
+        waveBtn.textContent = '⏩ 提前開始 (Enter)';
+      }
+    }
+    document.getElementById('btn-wave').addEventListener('click', () => {
+      if (!waveActive && wave < WAVES.length && !gameOver) {
+        nextWaveAt = performance.now(); // 立刻觸發
+      }
+    });
+    setInterval(updateUI, 200);
+  </script>
+</body>
+</html>
