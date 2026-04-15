@@ -612,9 +612,11 @@ class Enemy {
     const effSpeed=(now<this.slowUntil)?this.speed*0.35:this.speed;
     if(this.wpIndex>=this.path.length-1){
       // 抵達堡壘
+      const fort=towers.find(t=>TOWER_TYPES[t.type].isFortress);
+      if(!fort){ this.dead=true; return; }
       this.reached=true;
-      this.x=PATH_END.col*CELL_SIZE+CELL_SIZE/2;
-      this.y=PATH_END.row*CELL_SIZE+CELL_SIZE/2;
+      this.x=fort.x;
+      this.y=fort.y;
       return;
     }
     const t=this.path[this.wpIndex+1];
