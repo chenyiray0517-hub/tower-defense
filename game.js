@@ -970,8 +970,8 @@ function isInBuildRange(row,col){
 // ── 地圖繪製（俯視 2.5D）────────────────────────────────
 const GRASS_TOP   = ['#4a7c3f','#5c9448','#6dac50','#85c45e'];
 const GRASS_WALL  = ['#2d5228','#3a6830','#477a38','#558c42'];
-const PATH_TOP    = '#c2a05a';
-const PATH_WALL   = '#8a6830';
+const PATH_TOP    = GRASS_TOP[0];
+const PATH_WALL   = GRASS_WALL[0];
 
 function darken(hex,f){
   const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
@@ -992,7 +992,7 @@ function drawTile(col, row, tower){
     const wallH=elev*ELEV_H;
     const wallY=ty+CS;
     let wColor;
-    if(type===TILE.PATH||type===TILE.START||type===TILE.END) wColor=PATH_WALL;
+    if(type===TILE.START||type===TILE.END) wColor=PATH_WALL;
     else wColor=GRASS_WALL[Math.min(elev,3)];
     ctx.fillStyle=wColor;
     ctx.fillRect(x, wallY, CS, wallH);
