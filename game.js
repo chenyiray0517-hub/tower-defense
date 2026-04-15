@@ -363,11 +363,16 @@ const FRIENDLY_UNIT_TYPES = {
 };
 
 const RESEARCH_ITEMS = [
-  { id:'cavalry',    name:'解鎖騎兵',   cost:200, desc:'可訓練騎兵',     req:null },
-  { id:'paladin',    name:'解鎖聖騎士', cost:350, desc:'可訓練聖騎士',   req:'cavalry' },
-  { id:'hpBoost',    name:'強化體魄',   cost:180, desc:'士兵 HP +60%',   req:null },
-  { id:'dmgBoost',   name:'武器精煉',   cost:220, desc:'士兵攻擊 +60%',  req:null },
-  { id:'trainSpeed', name:'快速訓練',   cost:280, desc:'訓練間隔 -35%',  req:null },
+  { id:'cavalry',    name:'解鎖騎兵',     cost:200, desc:'可訓練騎兵',      req:null },
+  { id:'paladin',    name:'解鎖聖騎士',   cost:350, desc:'可訓練聖騎士',    req:'cavalry' },
+  { id:'hpBoost',    name:'強化體魄',     cost:180, desc:'士兵 HP +60%',    req:null },
+  { id:'dmgBoost',   name:'武器精煉',     cost:220, desc:'士兵攻擊 +60%',   req:null },
+  { id:'trainSpeed', name:'快速訓練',     cost:280, desc:'訓練間隔 -35%',   req:null },
+  // ── 主角升級 ──
+  { id:'heroHp',     name:'主角體魄強化', cost:200, desc:'主角 HP +50%',    req:null, isHero:true },
+  { id:'heroDmg',    name:'主角武器精煉', cost:220, desc:'主角傷害 +50%',   req:null, isHero:true },
+  { id:'heroAtk',    name:'主角攻速提升', cost:180, desc:'主角攻速 +40%',   req:null, isHero:true },
+  { id:'heroSpd',    name:'主角步法強化', cost:160, desc:'主角移速 +40%',   req:null, isHero:true },
 ];
 
 let researchDone = new Set();
@@ -434,10 +439,19 @@ function initGame(levelNum) {
 class Hero {
   constructor(){
     this.x=1*CELL_SIZE+CELL_SIZE/2; this.y=13*CELL_SIZE+CELL_SIZE/2;
-    this.speed=3; this.hp=200; this.maxHp=200;
-    this.size=14; this.damage=30; this.range=2.5*CELL_SIZE;
-    this.attackRate=700; this.lastAttack=0; this.dead=false;
-    this.invincible=0; // 無敵時間到期點（ms）
+    this.size=14; this.range=2.5*CELL_SIZE;
+    this.lastAttack=0; this.dead=false; this.invincible=0;
+    this.maxHp=200; this.hp=200;
+    this.damage=30; this.attackRate=700; this.speed=3;
+    this.applyResearch();
+  }
+  applyResearch(){
+    const wasAtFull=this.hp>=this.maxHp;
+    this.maxHp=Math.floor(200*(researchDone.has('heroHp')?1.5:1));
+    this.hp=wasAtFull?this.maxHp:Math.min(this.hp,this.maxHp);
+    this.damage=Math.floor(30*(researchDone.has('heroDmg')?1.5:1));
+    this.attackRate=Math.floor(700*(researchDone.has('heroAtk')?0.6:1));
+    this.speed=3*(researchDone.has('heroSpd')?1.4:1);
   }
   takeDamage(dmg, now){
     if(now<this.invincible) return;
@@ -1265,9 +1279,9 @@ function drawTrainingPanel(t, def, now){
 // ── 研發所面板 ────────────────────────────────────────────
 function drawLabPanel(t, def, now){
   const upCost=t.upgradeCost;
-  const itemH=34;
+  const itemH=34, sectionH=22;
   const pW=240;
-  const pH=14+26+8+RESEARCH_ITEMS.length*itemH+(upCost?44:0)+14;
+  const pH=14+26+8+RESEARCH_ITEMS.length*itemH+sectionH+(upCost?44:0)+14;
   const elev=elevData[t.row][t.col];
   const sx=t.col*CELL_SIZE+CELL_SIZE/2, sy=tileY(t.row,elev);
   let px=sx-pW/2, py=sy-pH-8;
@@ -1281,7 +1295,17 @@ function drawLabPanel(t, def, now){
   ctx.font='12px sans-serif'; ctx.fillStyle='#aaa'; ctx.textAlign='right';
   ctx.fillText(`Lv${t.level} · ${researchDone.size}項已研發`, px+pW-10, py+12);
   let iy=py+44;
+  let heroHeaderDrawn=false;
   for(const item of RESEARCH_ITEMS){
+    // 主角升級分隔標題
+    if(item.isHero&&!heroHeaderDrawn){
+      ctx.fillStyle='rgba(106,27,154,0.4)';
+      ctx.fillRect(px+8,iy,pW-16,sectionH);
+      ctx.font='bold 11px sans-serif'; ctx.fillStyle='#ce93d8';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('── 🧙 主角升級 ──', px+pW/2, iy+sectionH/2);
+      iy+=sectionH; heroHeaderDrawn=true;
+    }
     const done=researchDone.has(item.id);
     const locked=item.req&&!researchDone.has(item.req);
     const canAfford=!done&&!locked&&gold>=item.cost;
@@ -1430,6 +1454,7 @@ canvas.addEventListener('click', e=>{
     if(cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h){
       researchDone.add(b.id); gold-=b.cost;
       showMessage(`🔬 研發完成：${RESEARCH_ITEMS.find(r=>r.id===b.id)?.name}`);
+      if(hero) hero.applyResearch();
       return;
     }
   }
