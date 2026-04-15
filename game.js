@@ -373,11 +373,11 @@ let friendlyUnits = [];
 let towerIdCounter = 0;
 
 const ENEMY_TYPES = {
-  grunt:    { name:'步兵',   emoji:'👾', color:'#e74c3c', hp:80,  speed:1.2, reward:10, size:14, attackDmg:10, attackRate:1500, attackRange:CELL_SIZE*1.3 },
-  runner:   { name:'快衝兵', emoji:'💨', color:'#e67e22', hp:40,  speed:2.5, reward:15, size:11, attackDmg:6,  attackRate:700,  attackRange:CELL_SIZE*1.0 },
-  tank:     { name:'重甲兵', emoji:'🛡️', color:'#2c3e50', hp:300, speed:0.6, reward:30, size:18, attackDmg:30, attackRate:2000, attackRange:CELL_SIZE*1.5 },
-  revenant: { name:'重生兵', emoji:'💀', color:'#7b1fa2', hp:130, speed:1.0, reward:25, size:15, attackDmg:15, attackRate:1600, attackRange:CELL_SIZE*1.3, canRevive:true },
-  ghost:    { name:'幽靈兵', emoji:'👻', color:'#90a4ae', hp:70,  speed:1.8, reward:20, size:13, attackDmg:8,  attackRate:1200, attackRange:CELL_SIZE*1.1, isGhost:true },
+  grunt:    { name:'步兵',   emoji:'👾', color:'#e74c3c', hp:95,  speed:1.3, reward:10, size:14, attackDmg:13, attackRate:1300, attackRange:CELL_SIZE*1.4 },
+  runner:   { name:'快衝兵', emoji:'💨', color:'#e67e22', hp:50,  speed:2.8, reward:15, size:11, attackDmg:8,  attackRate:600,  attackRange:CELL_SIZE*1.1 },
+  tank:     { name:'重甲兵', emoji:'🛡️', color:'#2c3e50', hp:360, speed:0.7, reward:30, size:18, attackDmg:38, attackRate:1800, attackRange:CELL_SIZE*1.6 },
+  revenant: { name:'重生兵', emoji:'💀', color:'#7b1fa2', hp:155, speed:1.1, reward:25, size:15, attackDmg:18, attackRate:1400, attackRange:CELL_SIZE*1.4, canRevive:true },
+  ghost:    { name:'幽靈兵', emoji:'👻', color:'#90a4ae', hp:85,  speed:2.0, reward:20, size:13, attackDmg:10, attackRate:1100, attackRange:CELL_SIZE*1.2, isGhost:true },
 };
 
 const BUILD_RANGE = 3 * CELL_SIZE;
@@ -511,7 +511,7 @@ class Enemy {
     this.path=findPath()||[];
     const s=this.path[0]||PATH_START;
     this.x=s.col*CELL_SIZE+CELL_SIZE/2; this.y=s.row*CELL_SIZE+CELL_SIZE/2;
-    this.dead=false; this.reached=false;
+    this.dead=false; this.reached=false; this.blockTarget=null;
   }
   tryKill(bonus=0){
     if(this.dead) return;
@@ -552,7 +552,21 @@ class Enemy {
       return;
     }
 
-    // ── 行進途中的攻擊邏輯：優先己方士兵 → 主角 → 最近建築 ──
+    // ── 攻打阻路建築（停下不繞行）──
+    if(this.blockTarget){
+      if(!towers.includes(this.blockTarget)){
+        this.blockTarget=null;
+        this.recalculatePath();
+      } else {
+        if(now-this.lastAttack>=this.attackRate){
+          this.blockTarget.takeDamage(this.attackDmg);
+          this.lastAttack=now;
+        }
+        return; // 停止移動，等建築被摧毀
+      }
+    }
+
+    // ── 行進途中：優先己方士兵 → 主角（不停步）→ 建築（停步）──
     if(now-this.lastAttack>=this.attackRate){
       let attacked=false;
       // 1. 優先攻擊範圍內最近的己方士兵
@@ -568,7 +582,7 @@ class Enemy {
         if(closestUnit.hp<=0) closestUnit.dead=true;
         this.lastAttack=now; attacked=true;
       }
-      // 2. 攻擊主角
+      // 2. 攻擊主角（不停步）
       if(!attacked&&hero&&!hero.dead){
         const dx=hero.x-this.x,dy=hero.y-this.y;
         if(Math.sqrt(dx*dx+dy*dy)<=this.attackRange){
@@ -576,14 +590,20 @@ class Enemy {
           this.lastAttack=now; attacked=true;
         }
       }
-      // 3. 攻擊最近建築
-      if(!attacked&&towers.length>0){
+      // 3. 攻擊最近建築（停步，設為 blockTarget）
+      if(!attacked){
         let closest=null,closestD=this.attackRange;
         for(const t of towers){
+          if(TOWER_TYPES[t.type].isFortress) continue;
           const dx=t.x-this.x,dy=t.y-this.y,d=Math.sqrt(dx*dx+dy*dy);
           if(d<closestD){closestD=d;closest=t;}
         }
-        if(closest){closest.takeDamage(this.attackDmg);this.lastAttack=now;}
+        if(closest){
+          this.blockTarget=closest;
+          closest.takeDamage(this.attackDmg);
+          this.lastAttack=now;
+          return; // 立即停步
+        }
       }
     }
 
@@ -736,15 +756,18 @@ class Tower {
     // 堡壘 HP 定義在 levels 裡；其他塔從 def.hp 取
     this.maxHp=_def.isFortress?_def.levels[0].hp:_def.hp;
     this.hp=this.maxHp;
+    this.dead=false; this.hitFlash=0;
     this.id = ++towerIdCounter;
     if(_def.isTraining) this.trainUnitType='infantry';
     this._apply();
   }
   takeDamage(dmg){
     this.hp-=dmg;
+    this.hitFlash=performance.now()+220;
     if(this.hp<=0) this.destroy();
   }
   destroy(){
+    this.dead=true;
     if(TOWER_TYPES[this.type].isFortress){
       showMessage('🏰 堡壘陷落！遊戲結束',4000);
       gameOver=true;
@@ -1035,6 +1058,11 @@ function drawTile(col, row, tower){
       ctx.font='bold 9px sans-serif'; ctx.fillStyle=borderCol;
       ctx.textAlign='right'; ctx.textBaseline='top';
       ctx.fillText(`Lv${tower.level}`, x+CS-4, ty+4);
+    }
+    // 受擊閃光
+    if(tower.hitFlash&&performance.now()<tower.hitFlash){
+      ctx.fillStyle='rgba(255,80,80,0.45)';
+      ctx.fillRect(x+6,ty+6,CS-12,CS-12);
     }
     // HP 血條（堡壘永遠顯示，其他僅在受損時顯示）
     const hpR=tower.hp/tower.maxHp;
