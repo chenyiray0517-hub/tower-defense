@@ -169,12 +169,15 @@
       document.getElementById('ui-gold').textContent  = gold;
 document.getElementById('ui-wave').textContent  = `${wave} / ${WAVES.length}`;
       const waveBtn = document.getElementById('btn-wave');
-      const canSkip = !waveActive && wave < WAVES.length && !gameOver && nextWaveAt > 0;
+      const hasFort = !!fortTower;
+      const canSkip = !waveActive && wave < WAVES.length && !gameOver && nextWaveAt > 0 && hasFort;
       waveBtn.disabled = !canSkip;
       if (wave >= WAVES.length && !waveActive) {
         waveBtn.textContent = '🏆 全部完成！';
       } else if (waveActive) {
         waveBtn.textContent = '⚔️ 波次進行中...';
+      } else if (!hasFort) {
+        waveBtn.textContent = '🏰 請先建造堡壘！';
       } else if (nextWaveCountdown > 0) {
         waveBtn.textContent = `⏩ 提前開始 (${nextWaveCountdown}s)`;
       } else {
@@ -182,7 +185,8 @@ document.getElementById('ui-wave').textContent  = `${wave} / ${WAVES.length}`;
       }
     }
     document.getElementById('btn-wave').addEventListener('click', () => {
-      if (!waveActive && wave < WAVES.length && !gameOver) {
+      const hasFort = typeof towers!=='undefined' && towers.some(t=>typeof TOWER_TYPES!=='undefined'&&TOWER_TYPES[t.type]?.isFortress);
+      if (!waveActive && wave < WAVES.length && !gameOver && hasFort) {
         nextWaveAt = performance.now(); // 立刻觸發
       }
     });

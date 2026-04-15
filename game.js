@@ -1385,7 +1385,7 @@ document.addEventListener('keydown', e=>{
   if(e.key==='9') selectTower('training');
   if(e.key==='0') selectTower('lab');
   if(e.key==='Escape') selectedBuilding=null;
-  if(e.key==='Enter'&&!waveActive&&!gameOver) nextWaveAt=performance.now();
+  if(e.key==='Enter'&&!waveActive&&!gameOver&&towers.some(t=>TOWER_TYPES[t.type].isFortress)) nextWaveAt=performance.now();
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
 });
 document.addEventListener('keyup', e=>{ keys[e.key]=false; });
