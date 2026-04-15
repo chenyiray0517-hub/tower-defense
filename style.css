@@ -36,8 +36,8 @@ body {
 
 #level-grid {
   display: grid;
-  grid-template-columns: repeat(2, 280px);
-  gap: 20px;
+  grid-template-columns: repeat(4, 240px);
+  gap: 16px;
 }
 
 .level-card {
