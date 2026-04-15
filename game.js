@@ -417,13 +417,13 @@ function showMessage(t,d=2000){ messageText=t; messageExpire=performance.now()+d
 
 // ── 初始化 ────────────────────────────────────────────────
 function initGame(levelNum) {
+  researchDone=new Set();           // 必須在 hero = new Hero() 之前清空
   towers=[]; enemies=[]; bullets=[]; friendlyUnits=[];
   gold=300; wave=0; gameOver=false;
   spawnQueue=[]; waveActive=false; waveComplete=false;
   nextWaveAt=0; nextWaveCountdown=0; towerIdCounter=0;
   messageText=''; selectedBuilding=null; upgradeButtonBounds=null;
   trainUnitButtonBounds=[]; researchButtonBounds=[];
-  researchDone=new Set();
   occupiedCells.clear();
   selectedTowerType='archer';
   document.querySelectorAll('.tower-btn').forEach(b=>b.classList.remove('active'));
