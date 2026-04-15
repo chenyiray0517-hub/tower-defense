@@ -511,7 +511,7 @@ class Enemy {
     this.path=findPath()||[];
     const s=this.path[0]||PATH_START;
     this.x=s.col*CELL_SIZE+CELL_SIZE/2; this.y=s.row*CELL_SIZE+CELL_SIZE/2;
-    this.dead=false; this.reached=false; this.blockTarget=null;
+    this.dead=false; this.reached=false; this.meleeTarget=null;
   }
   tryKill(bonus=0){
     if(this.dead) return;
@@ -552,59 +552,60 @@ class Enemy {
       return;
     }
 
-    // ── 攻打阻路建築（停下不繞行）──
-    if(this.blockTarget){
-      if(!towers.includes(this.blockTarget)){
-        this.blockTarget=null;
-        this.recalculatePath();
-      } else {
-        if(now-this.lastAttack>=this.attackRate){
-          this.blockTarget.takeDamage(this.attackDmg);
-          this.lastAttack=now;
-        }
-        return; // 停止移動，等建築被摧毀
+    // ── 近戰系統：找到目標就停步攻打 ──
+    // 清除失效目標（死亡或跑離範圍）
+    if(this.meleeTarget){
+      const mt=this.meleeTarget;
+      const dead=mt.dead||(mt instanceof Tower&&!towers.includes(mt));
+      const edx=mt.x-this.x,edy=mt.y-this.y;
+      const outOfRange=Math.sqrt(edx*edx+edy*edy)>this.attackRange*1.6;
+      if(dead||(outOfRange&&!(mt instanceof Tower))){ // 建築不逃，不因距離丟棄
+        this.meleeTarget=null;
+        if(dead&&mt instanceof Tower) this.recalculatePath();
       }
     }
 
-    // ── 行進途中：優先己方士兵 → 主角（不停步）→ 建築（停步）──
-    if(now-this.lastAttack>=this.attackRate){
-      let attacked=false;
-      // 1. 優先攻擊範圍內最近的己方士兵
-      let closestUnit=null, closestUnitD=this.attackRange;
+    // 尋找新目標（已有目標則跳過搜尋）
+    if(!this.meleeTarget){
+      let best=null, bestD=this.attackRange;
+      // 1. 己方士兵
       for(const u of friendlyUnits){
         if(u.dead) continue;
         const dx=u.x-this.x,dy=u.y-this.y,d=Math.sqrt(dx*dx+dy*dy);
-        if(d<closestUnitD){closestUnitD=d;closestUnit=u;}
+        if(d<bestD){bestD=d;best=u;}
       }
-      if(closestUnit){
-        closestUnit.hp-=this.attackDmg;
-        closestUnit.hitFlash=now+220;
-        if(closestUnit.hp<=0) closestUnit.dead=true;
-        this.lastAttack=now; attacked=true;
+      // 2. 主角
+      if(!best&&hero&&!hero.dead){
+        const dx=hero.x-this.x,dy=hero.y-this.y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<=this.attackRange) best=hero;
       }
-      // 2. 攻擊主角（不停步）
-      if(!attacked&&hero&&!hero.dead){
-        const dx=hero.x-this.x,dy=hero.y-this.y;
-        if(Math.sqrt(dx*dx+dy*dy)<=this.attackRange){
-          hero.takeDamage(this.attackDmg,now);
-          this.lastAttack=now; attacked=true;
-        }
-      }
-      // 3. 攻擊最近建築（停步，設為 blockTarget）
-      if(!attacked){
-        let closest=null,closestD=this.attackRange;
+      // 3. 最近非堡壘建築
+      if(!best){
         for(const t of towers){
           if(TOWER_TYPES[t.type].isFortress) continue;
           const dx=t.x-this.x,dy=t.y-this.y,d=Math.sqrt(dx*dx+dy*dy);
-          if(d<closestD){closestD=d;closest=t;}
-        }
-        if(closest){
-          this.blockTarget=closest;
-          closest.takeDamage(this.attackDmg);
-          this.lastAttack=now;
-          return; // 立即停步
+          if(d<bestD){bestD=d;best=t;}
         }
       }
+      if(best) this.meleeTarget=best;
+    }
+
+    // 有目標：停步攻打
+    if(this.meleeTarget){
+      if(now-this.lastAttack>=this.attackRate){
+        const mt=this.meleeTarget;
+        if(mt instanceof Tower){
+          mt.takeDamage(this.attackDmg);
+        } else if(mt===hero){
+          hero.takeDamage(this.attackDmg,now);
+        } else {
+          mt.hp-=this.attackDmg;
+          mt.hitFlash=now+220;
+          if(mt.hp<=0) mt.dead=true;
+        }
+        this.lastAttack=now;
+      }
+      return; // 停步
     }
 
     // ── 移動（冰凍減速）──
