@@ -369,10 +369,10 @@ const RESEARCH_ITEMS = [
   { id:'dmgBoost',   name:'武器精煉',     cost:220, desc:'士兵攻擊 +60%',   req:null },
   { id:'trainSpeed', name:'快速訓練',     cost:280, desc:'訓練間隔 -35%',   req:null },
   // ── 主角升級 ──
-  { id:'heroHp',     name:'主角體魄強化', cost:200, desc:'主角 HP +50%',    req:null, isHero:true },
-  { id:'heroDmg',    name:'主角武器精煉', cost:220, desc:'主角傷害 +50%',   req:null, isHero:true },
-  { id:'heroAtk',    name:'主角攻速提升', cost:180, desc:'主角攻速 +40%',   req:null, isHero:true },
-  { id:'heroSpd',    name:'主角步法強化', cost:160, desc:'主角移速 +40%',   req:null, isHero:true },
+  { id:'heroHp',     name:'主角體魄強化', cost:120, desc:'主角 HP +25%',    req:null, isHero:true },
+  { id:'heroDmg',    name:'主角武器精煉', cost:130, desc:'主角傷害 +25%',   req:null, isHero:true },
+  { id:'heroAtk',    name:'主角攻速提升', cost:110, desc:'主角攻速 +20%',   req:null, isHero:true },
+  { id:'heroSpd',    name:'主角步法強化', cost:100, desc:'主角移速 +20%',   req:null, isHero:true },
 ];
 
 let researchDone = new Set();
@@ -447,11 +447,11 @@ class Hero {
   }
   applyResearch(){
     const wasAtFull=this.hp>=this.maxHp;
-    this.maxHp=Math.floor(200*(researchDone.has('heroHp')?1.5:1));
+    this.maxHp=Math.floor(200*(researchDone.has('heroHp')?1.25:1));
     this.hp=wasAtFull?this.maxHp:Math.min(this.hp,this.maxHp);
-    this.damage=Math.floor(30*(researchDone.has('heroDmg')?1.5:1));
-    this.attackRate=Math.floor(700*(researchDone.has('heroAtk')?0.6:1));
-    this.speed=3*(researchDone.has('heroSpd')?1.4:1);
+    this.damage=Math.floor(30*(researchDone.has('heroDmg')?1.25:1));
+    this.attackRate=Math.floor(700*(researchDone.has('heroAtk')?0.8:1));
+    this.speed=3*(researchDone.has('heroSpd')?1.2:1);
   }
   takeDamage(dmg, now){
     if(now<this.invincible) return;
