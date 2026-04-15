@@ -608,8 +608,8 @@ class Enemy {
       return; // 停步
     }
 
-    // ── 移動（冰凍減速）──
-    const effSpeed=(now<this.slowUntil)?this.speed*0.35:this.speed;
+    // ── 移動（冰凍減速 + 爬坡減速）──
+    let effSpeed=(now<this.slowUntil)?this.speed*0.35:this.speed;
     if(this.wpIndex>=this.path.length-1){
       // 抵達堡壘
       const fort=towers.find(t=>TOWER_TYPES[t.type].isFortress);
@@ -620,6 +620,11 @@ class Enemy {
       return;
     }
     const t=this.path[this.wpIndex+1];
+    // 爬坡減速：每升高1層減速20%，最多減60%
+    const curElev=elevData[Math.floor(this.y/CELL_SIZE)]?.[Math.floor(this.x/CELL_SIZE)]??0;
+    const nxtElev=elevData[t.row]?.[t.col]??0;
+    const elevDiff=nxtElev-curElev;
+    if(elevDiff>0) effSpeed*=Math.max(0.4, 1-elevDiff*0.2);
     const tx=t.col*CELL_SIZE+CELL_SIZE/2, ty=t.row*CELL_SIZE+CELL_SIZE/2;
     const dx=tx-this.x, dy=ty-this.y, dist=Math.sqrt(dx*dx+dy*dy);
     if(dist<effSpeed){this.x=tx;this.y=ty;this.wpIndex++;}
