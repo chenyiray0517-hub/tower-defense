@@ -992,7 +992,7 @@ function drawTile(col, row, tower){
     const wallH=elev*ELEV_H;
     const wallY=ty+CS;
     let wColor;
-    if(type===TILE.START||type===TILE.END) wColor=PATH_WALL;
+    if(type===TILE.START) wColor=PATH_WALL;
     else wColor=GRASS_WALL[Math.min(elev,3)];
     ctx.fillStyle=wColor;
     ctx.fillRect(x, wallY, CS, wallH);
@@ -1007,7 +1007,7 @@ function drawTile(col, row, tower){
   // ② 頂面
   let topColor;
   if(type===TILE.START)     topColor='#27ae60';
-  else if(type===TILE.END)  topColor='#e74c3c';
+  else if(type===TILE.END)  topColor=GRASS_TOP[0];
   else if(type===TILE.PATH) topColor=PATH_TOP;
   else topColor=GRASS_TOP[Math.min(elev,3)];
 
@@ -1033,11 +1033,11 @@ function drawTile(col, row, tower){
   ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=0.5;
   ctx.strokeRect(x,ty,CS,CS);
 
-  // START / END 標籤
-  if(type===TILE.START||type===TILE.END){
+  // START 標籤
+  if(type===TILE.START){
     ctx.font='bold 10px sans-serif'; ctx.fillStyle='#fff';
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(type===TILE.START?'START':'END', x+CS/2, ty+CS/2);
+    ctx.fillText('START', x+CS/2, ty+CS/2);
   }
 
   // ③ 塔
