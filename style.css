@@ -271,3 +271,8 @@ h1 {
   border-radius: 4px;
   box-shadow: 0 0 24px rgba(0,0,0,0.6);
 }
+
+#gameCanvas {
+  touch-action: none;
+  display: block;
+}
