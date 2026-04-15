@@ -956,10 +956,11 @@ function startWave(){
 }
 function updateSpawn(now){
   if(!waveActive&&!gameOver&&!waveComplete){
-    if(nextWaveAt>0){
+    const hasFort=towers.some(t=>TOWER_TYPES[t.type].isFortress);
+    if(nextWaveAt>0&&hasFort){
       nextWaveCountdown=Math.max(0,Math.ceil((nextWaveAt-now)/1000));
       if(now>=nextWaveAt) startWave();
-    } else nextWaveCountdown=0;
+    } else { nextWaveCountdown=0; if(!hasFort) nextWaveAt=performance.now()+3000; }
   } else nextWaveCountdown=0;
   if(!waveActive) return;
   while(spawnQueue.length&&now-spawnTimer>=spawnQueue[0].delay)
