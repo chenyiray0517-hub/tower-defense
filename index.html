@@ -616,12 +616,16 @@
     function rescaleMap() {
       const mapEl = document.getElementById('map-container');
       if (!mapEl) return;
-      const bodyPad = 32; // body padding 16px × 2
+      const bodyPad = 32;
       const available = window.innerWidth - bodyPad;
-      const scale = Math.min(1, available / MAP_NATURAL_W);
+      let scale = Math.min(1, available / MAP_NATURAL_W);
+      // 手機：地圖高度不超過螢幕 2/3
+      if (window.innerWidth <= 768) {
+        const maxH = window.innerHeight * (2 / 3);
+        scale = Math.min(scale, maxH / MAP_NATURAL_H);
+      }
       if (scale < 1) {
         mapEl.style.transform = `scale(${scale})`;
-        // 補回縮放後多餘的佔位空間（transform 不影響文件流）
         mapEl.style.marginBottom = `${(MAP_NATURAL_H * scale - MAP_NATURAL_H)}px`;
       } else {
         mapEl.style.transform = '';

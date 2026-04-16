@@ -524,6 +524,16 @@ const joystick = {
   dx: 0, dy: 0,
   baseR: 52, knobR: 24,
 };
+// 搖桿固定在畫布左下角
+const JOY_FIX_X = joystick.baseR + 20;
+const JOY_FIX_Y = canvas.height - joystick.baseR - 20;
+joystick.baseX = JOY_FIX_X;
+joystick.baseY = JOY_FIX_Y;
+joystick.knobX = JOY_FIX_X;
+joystick.knobY = JOY_FIX_Y;
+
+// 建築點擊追蹤
+let buildTouchId = null, buildTouchStartX = 0, buildTouchStartY = 0, buildTouchMoved = false;
 let messageText='', messageExpire=0;
 function showMessage(t,d=2000){ messageText=t; messageExpire=performance.now()+d; }
 
@@ -1359,20 +1369,19 @@ function drawHUD(){
     }
     ctx.restore();
   }
-  // 虛擬搖桿
-  if(joystick.active){
-    ctx.save();
-    ctx.globalAlpha=0.45;
-    ctx.beginPath();
-    ctx.arc(joystick.baseX, joystick.baseY, joystick.baseR, 0, Math.PI*2);
-    ctx.fillStyle='#ffffff'; ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=2; ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(joystick.knobX, joystick.knobY, joystick.knobR, 0, Math.PI*2);
-    ctx.fillStyle='#00e5ff'; ctx.fill();
-    ctx.globalAlpha=1;
-    ctx.restore();
-  }
+  // 虛擬搖桿（永遠顯示，非啟動時半透明）
+  ctx.save();
+  ctx.globalAlpha = joystick.active ? 0.45 : 0.18;
+  ctx.beginPath();
+  ctx.arc(JOY_FIX_X, JOY_FIX_Y, joystick.baseR, 0, Math.PI*2);
+  ctx.fillStyle='#ffffff'; ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=2; ctx.stroke();
+  ctx.globalAlpha = joystick.active ? 0.85 : 0.28;
+  ctx.beginPath();
+  ctx.arc(joystick.knobX, joystick.knobY, joystick.knobR, 0, Math.PI*2);
+  ctx.fillStyle='#00e5ff'; ctx.fill();
+  ctx.globalAlpha=1;
+  ctx.restore();
 }
 
 function drawUpgradePanel(){
@@ -1710,10 +1719,9 @@ canvas.addEventListener('mousemove', e=>{
 });
 canvas.addEventListener('mouseleave', ()=>{hoverCol=-1;hoverRow=-1;});
 
-canvas.addEventListener('click', e=>{
+// ── 點擊 / 點觸建築邏輯（cx/cy 為畫布像素座標）────────────
+function handleCanvasTap(cx, cy){
   if(gameOver) return;
-  const rect=canvas.getBoundingClientRect();
-  const cx=e.clientX-rect.left, cy=e.clientY-rect.top;
   // 出售按鈕
   if(sellButtonBounds){
     const b=sellButtonBounds;
@@ -1767,7 +1775,6 @@ canvas.addEventListener('click', e=>{
   }
   const cost=_bDef.levels[0].cost;
   if(gold<cost){showMessage(`💰 金幣不足！需要 ${cost} 金幣`);return;}
-  // 確認建塔後路徑仍存在
   const testOcc=new Set([...occupiedCells,key]);
   if(!findPath(testOcc)){showMessage('⚠️ 不能完全封鎖路徑！');return;}
   gold-=cost;
@@ -1775,6 +1782,12 @@ canvas.addEventListener('click', e=>{
   SFX.build();
   occupiedCells.add(key);
   recalculateAllPaths();
+}
+
+canvas.addEventListener('click', e=>{
+  const rect=canvas.getBoundingClientRect();
+  const scaleX=canvas.width/rect.width, scaleY=canvas.height/rect.height;
+  handleCanvasTap((e.clientX-rect.left)*scaleX, (e.clientY-rect.top)*scaleY);
 });
 
 // ── 關卡進度（localStorage）──────────────────────────────
@@ -1813,12 +1826,18 @@ canvas.addEventListener('touchstart', e=>{
   e.preventDefault();
   for(const t of e.changedTouches){
     const {x,y}=getCanvasPos(t);
-    // 左半螢幕啟動搖桿
-    if(x < canvas.width/2 && !joystick.active){
+    const dxJ=x-JOY_FIX_X, dyJ=y-JOY_FIX_Y;
+    const distToJoy=Math.sqrt(dxJ*dxJ+dyJ*dyJ);
+    if(!joystick.active && distToJoy<=joystick.baseR*1.8){
+      // 觸碰搖桿區域 → 啟動搖桿
       joystick.active=true; joystick.touchId=t.identifier;
-      joystick.baseX=x; joystick.baseY=y;
       joystick.knobX=x; joystick.knobY=y;
       joystick.dx=0; joystick.dy=0;
+    } else if(buildTouchId===null){
+      // 其他區域 → 追蹤建築點擊
+      buildTouchId=t.identifier;
+      buildTouchStartX=x; buildTouchStartY=y;
+      buildTouchMoved=false;
     }
   }
 },{passive:false});
@@ -1828,15 +1847,20 @@ canvas.addEventListener('touchmove', e=>{
   for(const t of e.changedTouches){
     if(t.identifier===joystick.touchId){
       const {x,y}=getCanvasPos(t);
-      const ddx=x-joystick.baseX, ddy=y-joystick.baseY;
+      const ddx=x-JOY_FIX_X, ddy=y-JOY_FIX_Y;
       const dist=Math.sqrt(ddx*ddx+ddy*ddy);
       const max=joystick.baseR-joystick.knobR;
       const clamp=Math.min(dist,max);
       const angle=Math.atan2(ddy,ddx);
-      joystick.knobX=joystick.baseX+Math.cos(angle)*clamp;
-      joystick.knobY=joystick.baseY+Math.sin(angle)*clamp;
+      joystick.knobX=JOY_FIX_X+Math.cos(angle)*clamp;
+      joystick.knobY=JOY_FIX_Y+Math.sin(angle)*clamp;
       joystick.dx=dist>6?Math.cos(angle)*Math.min(dist/max,1):0;
       joystick.dy=dist>6?Math.sin(angle)*Math.min(dist/max,1):0;
+    }
+    if(t.identifier===buildTouchId){
+      const {x,y}=getCanvasPos(t);
+      const dx=x-buildTouchStartX, dy=y-buildTouchStartY;
+      if(Math.sqrt(dx*dx+dy*dy)>10) buildTouchMoved=true;
     }
   }
 },{passive:false});
@@ -1846,11 +1870,22 @@ canvas.addEventListener('touchend', e=>{
   for(const t of e.changedTouches){
     if(t.identifier===joystick.touchId){
       joystick.active=false; joystick.touchId=null;
+      joystick.knobX=JOY_FIX_X; joystick.knobY=JOY_FIX_Y;
       joystick.dx=0; joystick.dy=0;
+    }
+    if(t.identifier===buildTouchId){
+      buildTouchId=null;
+      if(!buildTouchMoved){
+        const {x,y}=getCanvasPos(t);
+        handleCanvasTap(x, y);
+      }
     }
   }
 },{passive:false});
 
 canvas.addEventListener('touchcancel', e=>{
-  joystick.active=false; joystick.touchId=null; joystick.dx=0; joystick.dy=0;
+  joystick.active=false; joystick.touchId=null;
+  joystick.knobX=JOY_FIX_X; joystick.knobY=JOY_FIX_Y;
+  joystick.dx=0; joystick.dy=0;
+  buildTouchId=null;
 },{passive:false});

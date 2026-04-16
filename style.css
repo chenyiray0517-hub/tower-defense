@@ -352,15 +352,31 @@ h1 {
   #level-select-screen h1 { font-size: 30px; }
 }
 
-/* 塔按鈕在小螢幕縮小 */
+/* 塔按鈕在小螢幕縮小 + 面板改為橫向捲動 */
 @media (max-width: 700px) {
+  #tower-panel {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #2a4a7f #0f1a2e;
+  }
+  #tower-panel::-webkit-scrollbar { height: 4px; }
+  #tower-panel::-webkit-scrollbar-track { background: #0f1a2e; }
+  #tower-panel::-webkit-scrollbar-thumb { background: #2a4a7f; border-radius: 2px; }
+
+  .panel-label { flex-shrink: 0; }
+  #enemy-info  { flex-shrink: 0; font-size: 12px; padding: 6px 10px; }
+  #hero-info   { flex-shrink: 0; font-size: 11px; padding: 6px 10px; }
+
   .tower-btn {
+    flex-shrink: 0;
     padding: 6px 10px;
     font-size: 12px;
   }
   .tower-btn small { font-size: 10px; }
-  #enemy-info { font-size: 12px; padding: 6px 10px; }
-  #hero-info  { font-size: 11px; padding: 6px 10px; }
 }
 
 /* 選關卡面板在窄螢幕 */
