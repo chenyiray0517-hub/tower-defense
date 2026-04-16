@@ -15,7 +15,7 @@
 
     <div id="level-grid">
 
-      <div class="level-card" onclick="startLevel(1)">
+      <div class="level-card" data-level="1" onclick="startLevel(1)">
         <div class="level-badge">01</div>
         <div class="level-name">新手村</div>
         <div class="level-diff diff-easy">★☆☆ 簡單</div>
@@ -28,7 +28,7 @@
         <div class="level-start-btn">開始</div>
       </div>
 
-      <div class="level-card" onclick="startLevel(2)">
+      <div class="level-card" data-level="2" onclick="startLevel(2)">
         <div class="level-badge">02</div>
         <div class="level-name">荒野交鋒</div>
         <div class="level-diff diff-normal">★★☆ 普通</div>
@@ -41,7 +41,7 @@
         <div class="level-start-btn">開始</div>
       </div>
 
-      <div class="level-card" onclick="startLevel(3)">
+      <div class="level-card" data-level="3" onclick="startLevel(3)">
         <div class="level-badge">03</div>
         <div class="level-name">鋼鐵洪流</div>
         <div class="level-diff diff-hard">★★★ 困難</div>
@@ -54,7 +54,7 @@
         <div class="level-start-btn">開始</div>
       </div>
 
-      <div class="level-card" onclick="startLevel(4)">
+      <div class="level-card" data-level="4" onclick="startLevel(4)">
         <div class="level-badge">04</div>
         <div class="level-name">極限突破</div>
         <div class="level-diff diff-extreme">💀 極限</div>
@@ -67,7 +67,7 @@
         <div class="level-start-btn">開始</div>
       </div>
 
-      <div class="level-card" onclick="startLevel(5)">
+      <div class="level-card" data-level="5" onclick="startLevel(5)">
         <div class="level-badge">05</div>
         <div class="level-name">精英攻勢</div>
         <div class="level-diff diff-extreme">💀 極限</div>
@@ -80,7 +80,7 @@
         <div class="level-start-btn">開始</div>
       </div>
 
-      <div class="level-card" onclick="startLevel(6)">
+      <div class="level-card" data-level="6" onclick="startLevel(6)">
         <div class="level-badge">06</div>
         <div class="level-name">鋼鐵風暴</div>
         <div class="level-diff diff-extreme">💀 極限+</div>
@@ -93,7 +93,7 @@
         <div class="level-start-btn">開始</div>
       </div>
 
-      <div class="level-card" onclick="startLevel(7)">
+      <div class="level-card" data-level="7" onclick="startLevel(7)">
         <div class="level-badge">07</div>
         <div class="level-name">暗影突破</div>
         <div class="level-diff diff-extreme">☠️ 地獄</div>
@@ -106,7 +106,7 @@
         <div class="level-start-btn">開始</div>
       </div>
 
-      <div class="level-card" onclick="startLevel(8)">
+      <div class="level-card" data-level="8" onclick="startLevel(8)">
         <div class="level-badge">08</div>
         <div class="level-name">毀滅洪流</div>
         <div class="level-diff diff-extreme">☠️ 地獄+</div>
@@ -122,12 +122,421 @@
     </div>
   </div>
 
+  <!-- ══ 圖鑑區 ══ -->
+  <div id="intro-section">
+    <h2 class="intro-heading">📖 圖鑑</h2>
+    <div id="intro-tab-bar">
+      <button class="itab active" data-tab="buildings" onclick="showIntroTab('buildings')">🏗️ 防禦建築</button>
+      <button class="itab" data-tab="enemies" onclick="showIntroTab('enemies')">👾 敵方兵種</button>
+      <button class="itab" data-tab="friendlies" onclick="showIntroTab('friendlies')">⚔️ 友方兵種</button>
+    </div>
+
+    <!-- ── 防禦建築 ── -->
+    <div id="tab-buildings" class="itab-content active">
+      <p class="icategory">⚔️ 攻擊型</p>
+      <div class="icards">
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#3d1505,#8B4513)">🏹</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">弓箭手</span>
+              <span class="ibadge ibadge-atk">攻擊</span>
+            </div>
+            <div class="icard-cost">💰 50 金｜可升3級</div>
+            <div class="icard-stats">
+              <div class="istat"><span>攻擊力</span><span>15 → 45</span></div>
+              <div class="istat"><span>射程</span><span>2.5 → 3.2 格</span></div>
+              <div class="istat"><span>射速</span><span>快速（0.7s）</span></div>
+              <div class="istat"><span>HP</span><span>150</span></div>
+            </div>
+            <div class="icard-desc">基礎遠程單體攻擊塔。攻速最快，對快衝兵有極佳效果，是主力輸出塔之一。</div>
+          </div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#2a0055,#6a0dad)">🔮</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">法師</span>
+              <span class="ibadge ibadge-atk">範圍攻擊</span>
+            </div>
+            <div class="icard-cost">💰 100 金｜可升3級</div>
+            <div class="icard-stats">
+              <div class="istat"><span>攻擊力</span><span>35 → 95（範圍 0.8格）</span></div>
+              <div class="istat"><span>射程</span><span>2.0 → 2.8 格</span></div>
+              <div class="istat"><span>射速</span><span>中等（1.4s）</span></div>
+              <div class="istat"><span>HP</span><span>120</span></div>
+            </div>
+            <div class="icard-desc">魔法範圍爆炸傷害，一發可同時打中多個敵人。應對密集波次效果極佳。</div>
+          </div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#1a1a1a,#555555)">💣</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">大砲</span>
+              <span class="ibadge ibadge-atk">重砲</span>
+            </div>
+            <div class="icard-cost">💰 150 金｜可升3級</div>
+            <div class="icard-stats">
+              <div class="istat"><span>攻擊力</span><span>60 → 160（範圍 1.2格）</span></div>
+              <div class="istat"><span>射程</span><span>3.0 → 3.8 格</span></div>
+              <div class="istat"><span>射速</span><span>緩慢（1.8s）</span></div>
+              <div class="istat"><span>HP</span><span>200</span></div>
+            </div>
+            <div class="icard-desc">單發傷害與範圍最高的塔。射速慢但每炮威力驚人，適合轟炸重甲兵群。</div>
+          </div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#01579b,#4fc3f7)">🧊</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">冰塔</span>
+              <span class="ibadge ibadge-slow">減速</span>
+            </div>
+            <div class="icard-cost">💰 110 金｜可升3級</div>
+            <div class="icard-stats">
+              <div class="istat"><span>攻擊力</span><span>8 → 28</span></div>
+              <div class="istat"><span>射程</span><span>2.2 → 3.0 格</span></div>
+              <div class="istat"><span>減速</span><span>65%，持續 2.2 秒</span></div>
+              <div class="istat"><span>HP</span><span>120</span></div>
+            </div>
+            <div class="icard-desc">命中後大幅減緩敵人移速。本身傷害低，但配合大砲或法師可讓敵人在範圍內停留更久。</div>
+          </div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#3d2c00,#ffd600)">⚡</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">電塔</span>
+              <span class="ibadge ibadge-chain">鏈式</span>
+            </div>
+            <div class="icard-cost">💰 160 金｜可升3級</div>
+            <div class="icard-stats">
+              <div class="istat"><span>攻擊力</span><span>35 → 95</span></div>
+              <div class="istat"><span>射程</span><span>2.5 → 3.5 格</span></div>
+              <div class="istat"><span>鏈式跳</span><span>×3 → ×5 目標</span></div>
+              <div class="istat"><span>HP</span><span>140</span></div>
+            </div>
+            <div class="icard-desc">鏈式閃電連續跳至附近敵人，一次攻擊可傷害最多 5 個目標，對密集群體破壞力極強。</div>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="icategory">💰 經濟型</p>
+      <div class="icards">
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#0f2a08,#3d7a2a)">🌾</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">農場</span>
+              <span class="ibadge ibadge-eco">產金</span>
+            </div>
+            <div class="icard-cost">💰 80 金｜可升3級</div>
+            <div class="icard-stats">
+              <div class="istat"><span>產金</span><span>+8 → +28 金</span></div>
+              <div class="istat"><span>間隔</span><span>每 8 → 5.5 秒</span></div>
+              <div class="istat"><span>HP</span><span>80</span></div>
+            </div>
+            <div class="icard-desc">最便宜的收入建築，定時產出金幣。早期建造數座可大幅加速資金積累。</div>
+          </div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#2a1005,#795548)">⛏️</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">礦坑</span>
+              <span class="ibadge ibadge-eco">高產金</span>
+            </div>
+            <div class="icard-cost">💰 160 金｜可升3級</div>
+            <div class="icard-stats">
+              <div class="istat"><span>產金</span><span>+22 → +80 金</span></div>
+              <div class="istat"><span>間隔</span><span>每 10 → 7 秒</span></div>
+              <div class="istat"><span>HP</span><span>100</span></div>
+            </div>
+            <div class="icard-desc">單座產金量最高的建築。初期成本較高，但長期收益遠超農場，適合中後期建造。</div>
+          </div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#4a1500,#e65100)">🏪</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">市場</span>
+              <span class="ibadge ibadge-eco">擊殺獎勵</span>
+            </div>
+            <div class="icard-cost">💰 130 金｜可升3級</div>
+            <div class="icard-stats">
+              <div class="istat"><span>擊殺獎勵</span><span>+6 → +20 金/擊殺</span></div>
+              <div class="istat"><span>HP</span><span>80</span></div>
+            </div>
+            <div class="icard-desc">每次擊殺敵人時額外獲得金幣。波次越激烈、敵人越多，市場帶來的收益越驚人。</div>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="icategory">🔧 特殊建築</p>
+      <div class="icards">
+
+        <div class="icard icard-fortress">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#1a0800,#5a3010)">🏰</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">堡壘</span>
+              <span class="ibadge ibadge-must">必要</span>
+            </div>
+            <div class="icard-cost">💰 200 金｜全場唯一｜可升3級</div>
+            <div class="icard-stats">
+              <div class="istat"><span>HP</span><span>600 → 900 → 1400</span></div>
+              <div class="istat"><span>Lv2 新增</span><span>🧊 緩速光環（1.5格，降速20%）+ ⚕️HP再生 +4/5s</span></div>
+              <div class="istat"><span>Lv3 新增</span><span>⚔️ 自動反擊（25傷/1.5s）+ 更強光環與再生</span></div>
+            </div>
+            <div class="icard-desc">⚠️ 必須建造才能開始波次！升級後可獲得緩速光環、HP再生與自動反擊能力。位置要慎選。</div>
+          </div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#060620,#1a237e)">🏋️</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">訓練場</span>
+              <span class="ibadge ibadge-special">特殊</span>
+            </div>
+            <div class="icard-cost">💰 200 金｜可升3級</div>
+            <div class="icard-stats">
+              <div class="istat"><span>訓練間隔</span><span>18s → 9s</span></div>
+              <div class="istat"><span>最大單位</span><span>2 → 5</span></div>
+              <div class="istat"><span>HP</span><span>160</span></div>
+            </div>
+            <div class="icard-desc">定期生產友方士兵自動攻擊敵人。對付幽靈兵不可缺少，配合研發所可解鎖騎兵與聖騎士。</div>
+          </div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#0d0020,#4a148c)">🔬</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">研發所</span>
+              <span class="ibadge ibadge-special">特殊</span>
+            </div>
+            <div class="icard-cost">💰 220 金｜可升3級</div>
+            <div class="icard-stats">
+              <div class="istat"><span>功能</span><span>解鎖研發科技</span></div>
+              <div class="istat"><span>HP</span><span>100</span></div>
+            </div>
+            <div class="icard-desc">點擊後可花費金幣研究科技，包含解鎖騎兵（200金）、聖騎士（350金）及主角各項強化。</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── 敵方兵種 ── -->
+    <div id="tab-enemies" class="itab-content">
+      <div class="icards">
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#6a0a00,#e74c3c)">👾</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">步兵</span>
+              <span class="ibadge ibadge-enemy">普通</span>
+            </div>
+            <div class="icard-stats">
+              <div class="istat"><span>❤️ 血量</span><span>95</span></div>
+              <div class="istat"><span>⚡ 速度</span><span class="idots">●●●○○</span></div>
+              <div class="istat"><span>⚔️ 攻擊力</span><span>13</span></div>
+              <div class="istat"><span>💰 擊殺獎勵</span><span>10 金</span></div>
+            </div>
+            <div class="icard-desc">最基礎的敵人，無特殊能力。在高波次會大量同時湧現，以數量取勝。</div>
+          </div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#5c2800,#e67e22)">💨</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">快衝兵</span>
+              <span class="ibadge ibadge-enemy-fast">極速</span>
+            </div>
+            <div class="icard-stats">
+              <div class="istat"><span>❤️ 血量</span><span>50</span></div>
+              <div class="istat"><span>⚡ 速度</span><span class="idots idots-max">●●●●●</span></div>
+              <div class="istat"><span>⚔️ 攻擊力</span><span>8</span></div>
+              <div class="istat"><span>💰 擊殺獎勵</span><span>15 金</span></div>
+            </div>
+            <div class="icard-desc">移速最快但血量少。需使用弓箭手或電塔快速清除，否則容易突破防線直搗堡壘。</div>
+          </div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#0a0e14,#2c3e50)">🛡️</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">重甲兵</span>
+              <span class="ibadge ibadge-enemy-tank">重甲</span>
+            </div>
+            <div class="icard-stats">
+              <div class="istat"><span>❤️ 血量</span><span>360</span></div>
+              <div class="istat"><span>⚡ 速度</span><span class="idots">●●○○○</span></div>
+              <div class="istat"><span>⚔️ 攻擊力</span><span>38</span></div>
+              <div class="istat"><span>💰 擊殺獎勵</span><span>30 金</span></div>
+            </div>
+            <div class="icard-desc">高血量重甲，移速緩慢但攻擊力高。需要大砲集中火力或冰塔減速配合消滅。</div>
+          </div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#2a0040,#7b1fa2)">💀</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">重生兵</span>
+              <span class="ibadge ibadge-enemy-special">死亡復活</span>
+            </div>
+            <div class="icard-stats">
+              <div class="istat"><span>❤️ 血量</span><span>155（死後滿血復活一次）</span></div>
+              <div class="istat"><span>⚡ 速度</span><span class="idots">●●○○○</span></div>
+              <div class="istat"><span>⚔️ 攻擊力</span><span>18</span></div>
+              <div class="istat"><span>💰 擊殺獎勵</span><span>25 金</span></div>
+            </div>
+            <div class="icard-desc">⚠️ 死亡後以滿血復活一次，需要擊殺兩次才能消滅。別以為打死了就沒事！</div>
+          </div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#263238,#90a4ae)">👻</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">幽靈兵</span>
+              <span class="ibadge ibadge-enemy-ghost">幽靈</span>
+            </div>
+            <div class="icard-stats">
+              <div class="istat"><span>❤️ 血量</span><span>85</span></div>
+              <div class="istat"><span>⚡ 速度</span><span class="idots">●●●●○</span></div>
+              <div class="istat"><span>⚔️ 攻擊力</span><span>10</span></div>
+              <div class="istat"><span>💰 擊殺獎勵</span><span>20 金</span></div>
+            </div>
+            <div class="icard-desc">⚠️ 所有防禦塔均無法鎖定！只有主角和友方士兵可以攻擊。出現幽靈兵時，訓練場是必要建築。</div>
+          </div>
+        </div>
+
+        <div class="icard icard-boss">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#5a1500,#ff6f00)">👑</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">首領</span>
+              <span class="ibadge ibadge-boss">BOSS</span>
+            </div>
+            <div class="icard-stats">
+              <div class="istat"><span>❤️ 血量</span><span>3000</span></div>
+              <div class="istat"><span>⚡ 速度</span><span class="idots">●○○○○</span></div>
+              <div class="istat"><span>⚔️ 攻擊力</span><span>50</span></div>
+              <div class="istat"><span>💰 擊殺獎勵</span><span>200 金</span></div>
+            </div>
+            <div class="icard-desc">超高血量的強力 BOSS，攻擊力驚人。出現在特定波次，需全場火力集中應對，擊殺後獲得豐厚獎勵。</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── 友方兵種 ── -->
+    <div id="tab-friendlies" class="itab-content">
+      <p class="icategory">🧙 主角（玩家操控）</p>
+      <div class="icards">
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#003344,#007090)">🧙</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">主角</span>
+              <span class="ibadge ibadge-hero">玩家操控</span>
+            </div>
+            <div class="icard-stats">
+              <div class="istat"><span>❤️ 血量</span><span>260（陣亡後自動復活）</span></div>
+              <div class="istat"><span>⚡ 移速</span><span class="idots">●●●●○</span></div>
+              <div class="istat"><span>⚔️ 攻擊力</span><span>40（自動攻擊）</span></div>
+              <div class="istat"><span>🎯 攻擊範圍</span><span>2.8 格</span></div>
+            </div>
+            <div class="icard-desc">以 WASD 或方向鍵移動，自動攻擊範圍內敵人。靠近格子才能建造防禦塔。陣亡後回到起點復活，可透過研發所升級 HP、攻擊、攻速、移速。</div>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="icategory">⚔️ 友方士兵（由訓練場生產）</p>
+      <div class="icards">
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#05143a,#1e88e5)">🗡️</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">步兵</span>
+              <span class="ibadge ibadge-friendly">預設可用</span>
+            </div>
+            <div class="icard-stats">
+              <div class="istat"><span>❤️ 血量</span><span>80</span></div>
+              <div class="istat"><span>⚡ 移速</span><span class="idots">●●●○○</span></div>
+              <div class="istat"><span>⚔️ 攻擊力</span><span>18</span></div>
+              <div class="istat"><span>🎯 攻擊範圍</span><span>1.5 格</span></div>
+            </div>
+            <div class="icard-desc">訓練場預設生產的基礎士兵，自動追擊並攻擊敵人。是對付幽靈兵（防禦塔無效）的關鍵單位。</div>
+          </div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#002530,#00acc1)">🐴</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">騎兵</span>
+              <span class="ibadge ibadge-unlock">研發所解鎖 · 200金</span>
+            </div>
+            <div class="icard-stats">
+              <div class="istat"><span>❤️ 血量</span><span>110</span></div>
+              <div class="istat"><span>⚡ 移速</span><span class="idots idots-max">●●●●●</span></div>
+              <div class="istat"><span>⚔️ 攻擊力</span><span>25</span></div>
+              <div class="istat"><span>🎯 攻擊範圍</span><span>1.5 格</span></div>
+            </div>
+            <div class="icard-desc">需在研發所花費 200 金解鎖。移速最快的友方單位，擅長追擊快衝兵和幽靈兵。</div>
+          </div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-icon" style="background:linear-gradient(135deg,#3d2000,#f9a825)">⚜️</div>
+          <div class="icard-body">
+            <div class="icard-header">
+              <span class="icard-name">聖騎士</span>
+              <span class="ibadge ibadge-unlock">研發所解鎖 · 350金</span>
+            </div>
+            <div class="icard-stats">
+              <div class="istat"><span>❤️ 血量</span><span>280</span></div>
+              <div class="istat"><span>⚡ 移速</span><span class="idots">●●○○○</span></div>
+              <div class="istat"><span>⚔️ 攻擊力</span><span>42</span></div>
+              <div class="istat"><span>🎯 攻擊範圍</span><span>1.8 格</span></div>
+            </div>
+            <div class="icard-desc">需先解鎖騎兵後才能研發，花費 350 金。血量最高、攻擊最強，是對抗重甲兵和 BOSS 的最強友方單位。</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- ══ 遊戲主畫面 ══ -->
   <div id="game-screen" style="display:none; flex-direction:column; align-items:center; gap:10px;">
 
     <div id="game-header">
       <h1>⚔️ 塔防遊戲</h1>
       <button id="btn-back" onclick="backToSelect()">← 返回選關</button>
+      <button id="btn-mute" onclick="toggleMuteBtn()" title="靜音">🔊</button>
     </div>
 
     <!-- 狀態列 -->
@@ -197,19 +606,58 @@
     </div>
   </div>
 
+  <script src="audio.js"></script>
   <script src="game.js"></script>
   <script>
-    function startLevel(levelNum) {
-      document.getElementById('level-select-screen').style.display = 'none';
-      document.getElementById('game-screen').style.display = 'flex';
-      initGame(levelNum);
+    // ── RWD：依視窗寬度縮放地圖 ──────────────────────────
+    const MAP_NATURAL_W = 966;  // 960px canvas + 6px border
+    const MAP_NATURAL_H = 768;  // 762px canvas + 6px border
+
+    function rescaleMap() {
+      const mapEl = document.getElementById('map-container');
+      if (!mapEl) return;
+      const bodyPad = 32; // body padding 16px × 2
+      const available = window.innerWidth - bodyPad;
+      const scale = Math.min(1, available / MAP_NATURAL_W);
+      if (scale < 1) {
+        mapEl.style.transform = `scale(${scale})`;
+        // 補回縮放後多餘的佔位空間（transform 不影響文件流）
+        mapEl.style.marginBottom = `${(MAP_NATURAL_H * scale - MAP_NATURAL_H)}px`;
+      } else {
+        mapEl.style.transform = '';
+        mapEl.style.marginBottom = '';
+      }
     }
 
+    window.addEventListener('resize', rescaleMap);
+
+    function toggleMuteBtn() {
+      const muted = SFX.toggleMute();
+      document.getElementById('btn-mute').textContent = muted ? '🔇' : '🔊';
+    }
     function backToSelect() {
       document.getElementById('game-screen').style.display = 'none';
       document.getElementById('level-select-screen').style.display = 'flex';
+      document.getElementById('intro-section').style.display = 'flex';
       cancelAnimationFrame(animFrameId);
+      SFX.stopBGM();
+      refreshLevelCards();
     }
+    function showIntroTab(tab) {
+      document.querySelectorAll('.itab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.itab').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.querySelector(`.itab[data-tab="${tab}"]`).classList.add('active');
+    }
+
+    function startLevel(levelNum) {
+      document.getElementById('level-select-screen').style.display = 'none';
+      document.getElementById('intro-section').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'flex';
+      initGame(levelNum);
+      rescaleMap();
+    }
+
 
     // UI 更新
     function updateUI() {

@@ -10,6 +10,7 @@ body {
   color: #eee;
   gap: 10px;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* ── 選關介面 ── */
@@ -38,6 +39,18 @@ body {
   display: grid;
   grid-template-columns: repeat(4, 240px);
   gap: 16px;
+  width: 100%;
+  max-width: 1040px;
+}
+
+@media (max-width: 1040px) {
+  #level-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 780px) {
+  #level-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+}
+@media (max-width: 500px) {
+  #level-grid { grid-template-columns: 1fr; gap: 10px; }
 }
 
 .level-card {
@@ -121,6 +134,31 @@ body {
   color: #1a1a2e;
 }
 
+.level-clear-badge {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  background: rgba(46,204,113,0.25);
+  color: #2ecc71;
+  font-size: 18px;
+  font-weight: 900;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #2ecc71;
+}
+
+.level-card.cleared {
+  border-color: rgba(46,204,113,0.5);
+}
+
+.level-card.cleared:hover {
+  border-color: #2ecc71;
+}
+
 /* ── 遊戲標題列 ── */
 #game-header {
   display: flex;
@@ -144,6 +182,20 @@ body {
   transition: color 0.15s, border-color 0.15s;
 }
 #btn-back:hover { color: #fff; border-color: #888; }
+
+#btn-mute {
+  position: absolute;
+  right: 0;
+  background: #0f3460;
+  color: #aaa;
+  border: 1px solid #444;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: color 0.15s, border-color 0.15s;
+}
+#btn-mute:hover { color: #fff; border-color: #888; }
 
 h1 {
   font-size: 26px;
@@ -186,6 +238,8 @@ h1 {
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
+  width: 100%;
+  max-width: 100vw;
 }
 
 .panel-label {
@@ -270,9 +324,247 @@ h1 {
   border: 3px solid #444;
   border-radius: 4px;
   box-shadow: 0 0 24px rgba(0,0,0,0.6);
+  transform-origin: top center;
+  flex-shrink: 0;
 }
 
 #gameCanvas {
   touch-action: none;
   display: block;
 }
+
+/* ── RWD 響應式調整 ── */
+
+/* 遊戲主畫面：限制最大寬度對齊 canvas */
+#game-screen {
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* 狀態列縮小 */
+@media (max-width: 700px) {
+  #status-bar {
+    font-size: 13px;
+    padding: 8px 14px;
+    gap: 14px;
+  }
+  h1 { font-size: 20px; letter-spacing: 2px; }
+  #level-select-screen h1 { font-size: 30px; }
+}
+
+/* 塔按鈕在小螢幕縮小 */
+@media (max-width: 700px) {
+  .tower-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .tower-btn small { font-size: 10px; }
+  #enemy-info { font-size: 12px; padding: 6px 10px; }
+  #hero-info  { font-size: 11px; padding: 6px 10px; }
+}
+
+/* 選關卡面板在窄螢幕 */
+@media (max-width: 500px) {
+  .level-card { padding: 16px 14px; }
+  .level-name { font-size: 17px; }
+  #level-select-screen h1 { font-size: 26px; }
+  .subtitle { font-size: 14px; }
+}
+
+/* ══════════════════════════════════════
+   圖鑑區
+══════════════════════════════════════ */
+#intro-section {
+  width: 100%;
+  max-width: 1040px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 48px;
+}
+
+.intro-heading {
+  font-size: 28px;
+  letter-spacing: 3px;
+  color: #f1c40f;
+  text-shadow: 0 0 16px rgba(241,196,15,0.3);
+}
+
+/* ── Tab 切換按鈕 ── */
+#intro-tab-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.itab {
+  background: #0f3460;
+  color: #aaa;
+  border: 2px solid #2a4a7f;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: bold;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.itab:hover { color: #eee; border-color: #5a8abf; background: #163060; }
+.itab.active {
+  color: #f1c40f;
+  border-color: #f1c40f;
+  background: #1a3060;
+}
+
+/* ── Tab 內容 ── */
+.itab-content { display: none; width: 100%; }
+.itab-content.active { display: block; }
+
+/* ── 類別標題 ── */
+.icategory {
+  font-size: 13px;
+  font-weight: bold;
+  color: #8898aa;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 8px 0 12px;
+  border-bottom: 1px solid #1e3058;
+  margin-bottom: 16px;
+}
+
+/* ── 卡片格線 ── */
+.icards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 720px) {
+  .icards { grid-template-columns: 1fr; }
+}
+
+/* ── 單張卡片 ── */
+.icard {
+  display: flex;
+  gap: 0;
+  background: linear-gradient(145deg, #0e1c36, #0c2a50);
+  border: 1px solid #1e3868;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.icard:hover {
+  border-color: #3a6aaf;
+  box-shadow: 0 4px 18px rgba(0,60,140,0.3);
+}
+.icard-fortress {
+  border-color: rgba(241,196,15,0.35);
+}
+.icard-fortress:hover {
+  border-color: #f1c40f;
+  box-shadow: 0 4px 18px rgba(241,196,15,0.2);
+}
+.icard-boss {
+  border-color: rgba(255,111,0,0.35);
+}
+.icard-boss:hover {
+  border-color: #ff6f00;
+  box-shadow: 0 4px 18px rgba(255,111,0,0.2);
+}
+
+/* ── 卡片圖示 ── */
+.icard-icon {
+  flex-shrink: 0;
+  width: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42px;
+  line-height: 1;
+  border-right: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ── 卡片內容 ── */
+.icard-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 1;
+  min-width: 0;
+}
+
+.icard-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.icard-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #ddeeff;
+}
+
+.icard-cost {
+  font-size: 12px;
+  color: #c8a830;
+}
+
+/* ── 屬性列 ── */
+.icard-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.istat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  gap: 8px;
+}
+.istat span:first-child { flex-shrink: 0; color: #6a86a4; }
+.istat span:last-child  { color: #b8cce0; text-align: right; }
+
+/* ── 速度點點 ── */
+.idots { letter-spacing: 2px; color: #4fc3f7; font-size: 13px; }
+.idots-max { color: #f1c40f; }
+
+/* ── 描述文字 ── */
+.icard-desc {
+  font-size: 12px;
+  color: #7a90a8;
+  line-height: 1.6;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  padding-top: 7px;
+  margin-top: 2px;
+}
+
+/* ── Badge 標籤 ── */
+.ibadge {
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.ibadge-atk          { background: rgba(231,76,60,0.18);   color: #e74c3c; }
+.ibadge-slow         { background: rgba(79,195,247,0.18);  color: #4fc3f7; }
+.ibadge-chain        { background: rgba(255,214,0,0.18);   color: #ffd600; }
+.ibadge-eco          { background: rgba(46,204,113,0.18);  color: #2ecc71; }
+.ibadge-must         { background: rgba(241,196,15,0.22);  color: #f1c40f; }
+.ibadge-special      { background: rgba(100,180,255,0.14); color: #64b4ff; }
+.ibadge-enemy        { background: rgba(231,76,60,0.18);   color: #e74c3c; }
+.ibadge-enemy-fast   { background: rgba(230,126,34,0.18);  color: #e67e22; }
+.ibadge-enemy-tank   { background: rgba(149,165,166,0.18); color: #95a5a6; }
+.ibadge-enemy-special{ background: rgba(123,31,162,0.25);  color: #ce93d8; }
+.ibadge-enemy-ghost  { background: rgba(144,164,174,0.18); color: #b0bec5; }
+.ibadge-boss         { background: rgba(255,111,0,0.22);   color: #ff9800; }
+.ibadge-hero         { background: rgba(0,229,255,0.14);   color: #00e5ff; }
+.ibadge-friendly     { background: rgba(30,136,229,0.18);  color: #64b5f6; }
+.ibadge-unlock       { background: rgba(249,168,37,0.18);  color: #ffd54f; }

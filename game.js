@@ -159,161 +159,169 @@ function recalculateAllPaths(){
 
 // ── 各關卡波次設定（20 波）──────────────────────────────
 const LEVEL_WAVES = {
+  // ── L1：純步兵，非常簡單 ──────────────────────────────
   1: [
+    [{type:'grunt',count:3,interval:1800}],
+    [{type:'grunt',count:4,interval:1700}],
     [{type:'grunt',count:4,interval:1600}],
     [{type:'grunt',count:5,interval:1500}],
-    [{type:'grunt',count:6,interval:1400}],
-    [{type:'grunt',count:7,interval:1300}],
-    [{type:'grunt',count:8,interval:1200}],
-    [{type:'grunt',count:9,interval:1100}],
-    [{type:'grunt',count:10,interval:1000}],
-    [{type:'grunt',count:11,interval:950}],
-    [{type:'grunt',count:12,interval:900}],
-    [{type:'grunt',count:13,interval:850}],
-    [{type:'grunt',count:14,interval:800}],
+    [{type:'grunt',count:5,interval:1400}],
+    [{type:'grunt',count:6,interval:1350}],
+    [{type:'grunt',count:6,interval:1300}],
+    [{type:'grunt',count:7,interval:1250}],
+    [{type:'grunt',count:7,interval:1200}],
+    [{type:'grunt',count:8,interval:1150}],
+    [{type:'grunt',count:8,interval:1100}],
+    [{type:'grunt',count:9,interval:1050}],
+    [{type:'grunt',count:9,interval:1000}],
+    [{type:'grunt',count:10,interval:950}],
+    [{type:'grunt',count:10,interval:900}],
+    [{type:'grunt',count:11,interval:880}],
+    [{type:'grunt',count:11,interval:860}],
+    [{type:'grunt',count:12,interval:840}],
+    [{type:'grunt',count:13,interval:800}],
     [{type:'grunt',count:15,interval:750}],
-    [{type:'grunt',count:16,interval:700}],
-    [{type:'grunt',count:17,interval:650}],
-    [{type:'grunt',count:18,interval:620}],
-    [{type:'grunt',count:19,interval:600}],
-    [{type:'grunt',count:20,interval:580}],
-    [{type:'grunt',count:22,interval:550}],
-    [{type:'grunt',count:25,interval:500}],
-    [{type:'grunt',count:30,interval:450}],
   ],
+  // ── L2：步兵＋快衝兵 ──────────────────────────────────
   2: [
-    [{type:'grunt',count:6,interval:1200}],
-    [{type:'grunt',count:7,interval:1100}],
-    [{type:'grunt',count:7,interval:1000},{type:'runner',count:3,interval:900}],
-    [{type:'runner',count:6,interval:800}],
-    [{type:'grunt',count:8,interval:950},{type:'runner',count:4,interval:750}],
+    [{type:'grunt',count:4,interval:1400}],
+    [{type:'grunt',count:5,interval:1300}],
+    [{type:'grunt',count:5,interval:1200},{type:'runner',count:3,interval:900}],
+    [{type:'runner',count:5,interval:850}],
+    [{type:'grunt',count:6,interval:1100},{type:'runner',count:4,interval:800}],
+    [{type:'runner',count:7,interval:780}],
+    [{type:'grunt',count:7,interval:1000},{type:'runner',count:5,interval:750}],
+    [{type:'grunt',count:8,interval:950},{type:'runner',count:6,interval:720}],
     [{type:'runner',count:8,interval:700}],
-    [{type:'grunt',count:9,interval:900},{type:'runner',count:6,interval:650}],
-    [{type:'grunt',count:10,interval:850},{type:'runner',count:7,interval:620}],
-    [{type:'runner',count:10,interval:600}],
-    [{type:'grunt',count:11,interval:800},{type:'runner',count:8,interval:580}],
-    [{type:'grunt',count:12,interval:750},{type:'runner',count:9,interval:550}],
+    [{type:'grunt',count:8,interval:900},{type:'runner',count:6,interval:680}],
+    [{type:'grunt',count:9,interval:850},{type:'runner',count:7,interval:660}],
+    [{type:'runner',count:9,interval:640}],
+    [{type:'grunt',count:10,interval:820},{type:'runner',count:7,interval:620}],
+    [{type:'grunt',count:11,interval:800},{type:'runner',count:8,interval:600}],
+    [{type:'runner',count:10,interval:580}],
+    [{type:'grunt',count:12,interval:780},{type:'runner',count:9,interval:560}],
+    [{type:'grunt',count:13,interval:750},{type:'runner',count:10,interval:540}],
     [{type:'runner',count:12,interval:520}],
-    [{type:'grunt',count:13,interval:720},{type:'runner',count:10,interval:500}],
-    [{type:'grunt',count:14,interval:700},{type:'runner',count:11,interval:480}],
-    [{type:'runner',count:14,interval:460}],
-    [{type:'grunt',count:15,interval:680},{type:'runner',count:12,interval:450}],
-    [{type:'grunt',count:16,interval:650},{type:'runner',count:13,interval:430}],
-    [{type:'runner',count:16,interval:420}],
-    [{type:'grunt',count:18,interval:620},{type:'runner',count:15,interval:400}],
-    [{type:'grunt',count:20,interval:580},{type:'runner',count:18,interval:380}],
+    [{type:'grunt',count:14,interval:720},{type:'runner',count:11,interval:500}],
+    [{type:'grunt',count:16,interval:680},{type:'runner',count:13,interval:480}],
   ],
+  // ── L3：加入重甲兵 ─────────────────────────────────────
   3: [
-    [{type:'grunt',count:6,interval:1000}],
-    [{type:'grunt',count:7,interval:950},{type:'tank',count:1,interval:3000}],
-    [{type:'runner',count:7,interval:800}],
-    [{type:'grunt',count:8,interval:900},{type:'tank',count:1,interval:2800}],
-    [{type:'runner',count:8,interval:750},{type:'tank',count:1,interval:2600}],
-    [{type:'grunt',count:9,interval:850},{type:'tank',count:2,interval:2500}],
-    [{type:'runner',count:9,interval:700},{type:'tank',count:2,interval:2400}],
-    [{type:'grunt',count:10,interval:820},{type:'runner',count:6,interval:680},{type:'tank',count:2,interval:2300}],
-    [{type:'tank',count:3,interval:2200},{type:'revenant',count:1,interval:3500}],
-    [{type:'grunt',count:11,interval:780},{type:'runner',count:7,interval:650},{type:'ghost',count:2,interval:1800}],
-    [{type:'runner',count:10,interval:620},{type:'tank',count:3,interval:2000},{type:'revenant',count:1,interval:3200}],
-    [{type:'grunt',count:12,interval:750},{type:'tank',count:3,interval:1900},{type:'ghost',count:2,interval:1600}],
-    [{type:'grunt',count:13,interval:720},{type:'runner',count:9,interval:600},{type:'revenant',count:2,interval:3000}],
-    [{type:'runner',count:12,interval:580},{type:'tank',count:4,interval:1800},{type:'ghost',count:3,interval:1500}],
-    [{type:'grunt',count:14,interval:700},{type:'tank',count:4,interval:1700},{type:'revenant',count:2,interval:2800}],
-    [{type:'grunt',count:15,interval:670},{type:'runner',count:11,interval:560},{type:'ghost',count:3,interval:1400},{type:'revenant',count:2,interval:2600}],
-    [{type:'runner',count:14,interval:540},{type:'tank',count:5,interval:1600},{type:'revenant',count:3,interval:2500}],
-    [{type:'grunt',count:16,interval:640},{type:'runner',count:12,interval:520},{type:'ghost',count:4,interval:1300},{type:'tank',count:5,interval:1600}],
-    [{type:'grunt',count:18,interval:600},{type:'tank',count:6,interval:1500},{type:'revenant',count:3,interval:2200},{type:'ghost',count:3,interval:1300}],
-    [{type:'grunt',count:20,interval:560},{type:'runner',count:15,interval:480},{type:'tank',count:8,interval:1400},{type:'revenant',count:4,interval:2000},{type:'ghost',count:4,interval:1200}],
+    [{type:'grunt',count:5,interval:1100}],
+    [{type:'grunt',count:6,interval:1050},{type:'runner',count:3,interval:800}],
+    [{type:'runner',count:7,interval:750}],
+    [{type:'grunt',count:7,interval:1000},{type:'runner',count:5,interval:720},{type:'tank',count:1,interval:2800}],
+    [{type:'runner',count:8,interval:700},{type:'tank',count:1,interval:2600}],
+    [{type:'grunt',count:8,interval:950},{type:'runner',count:6,interval:680},{type:'tank',count:1,interval:2500}],
+    [{type:'runner',count:9,interval:660},{type:'tank',count:2,interval:2400}],
+    [{type:'grunt',count:9,interval:900},{type:'runner',count:7,interval:640},{type:'tank',count:2,interval:2300}],
+    [{type:'runner',count:10,interval:620},{type:'tank',count:2,interval:2200}],
+    [{type:'grunt',count:10,interval:870},{type:'runner',count:8,interval:610},{type:'tank',count:2,interval:2100}],
+    [{type:'grunt',count:11,interval:840},{type:'runner',count:9,interval:590},{type:'tank',count:3,interval:2000}],
+    [{type:'runner',count:11,interval:580},{type:'tank',count:3,interval:1950}],
+    [{type:'grunt',count:12,interval:820},{type:'runner',count:9,interval:570},{type:'tank',count:3,interval:1900}],
+    [{type:'grunt',count:13,interval:800},{type:'runner',count:10,interval:560},{type:'tank',count:3,interval:1850}],
+    [{type:'runner',count:12,interval:540},{type:'tank',count:4,interval:1800}],
+    [{type:'grunt',count:14,interval:780},{type:'runner',count:10,interval:530},{type:'tank',count:4,interval:1750}],
+    [{type:'grunt',count:15,interval:760},{type:'runner',count:11,interval:520},{type:'tank',count:4,interval:1700}],
+    [{type:'runner',count:13,interval:500},{type:'tank',count:5,interval:1650}],
+    [{type:'grunt',count:16,interval:740},{type:'runner',count:12,interval:490},{type:'tank',count:5,interval:1600}],
+    [{type:'grunt',count:18,interval:700},{type:'runner',count:14,interval:470},{type:'tank',count:5,interval:1550}],
   ],
-  5: [
-    [{type:'grunt',count:10,interval:600},{type:'runner',count:7,interval:500},{type:'tank',count:2,interval:1900}],
-    [{type:'grunt',count:11,interval:580},{type:'runner',count:8,interval:480},{type:'tank',count:2,interval:1800}],
-    [{type:'runner',count:12,interval:550},{type:'tank',count:3,interval:1800}],
-    [{type:'grunt',count:12,interval:560},{type:'runner',count:9,interval:460},{type:'tank',count:3,interval:1700},{type:'revenant',count:1,interval:2800}],
-    [{type:'grunt',count:13,interval:540},{type:'runner',count:10,interval:450},{type:'tank',count:3,interval:1700},{type:'ghost',count:2,interval:1400}],
-    [{type:'runner',count:14,interval:520},{type:'tank',count:4,interval:1600},{type:'revenant',count:2,interval:2600}],
-    [{type:'grunt',count:14,interval:520},{type:'runner',count:11,interval:430},{type:'tank',count:4,interval:1600},{type:'ghost',count:2,interval:1300}],
-    [{type:'grunt',count:15,interval:500},{type:'runner',count:12,interval:420},{type:'tank',count:4,interval:1550},{type:'revenant',count:2,interval:2400},{type:'ghost',count:3,interval:1200}],
-    [{type:'runner',count:16,interval:490},{type:'tank',count:5,interval:1500},{type:'revenant',count:3,interval:2300}],
-    [{type:'grunt',count:16,interval:490},{type:'runner',count:13,interval:410},{type:'tank',count:5,interval:1500},{type:'ghost',count:3,interval:1200}],
-    [{type:'grunt',count:17,interval:470},{type:'tank',count:5,interval:1450},{type:'revenant',count:3,interval:2200},{type:'ghost',count:3,interval:1150}],
-    [{type:'runner',count:18,interval:460},{type:'tank',count:6,interval:1400},{type:'ghost',count:4,interval:1100}],
-    [{type:'grunt',count:18,interval:460},{type:'runner',count:14,interval:400},{type:'revenant',count:4,interval:2100},{type:'ghost',count:4,interval:1100}],
-    [{type:'runner',count:20,interval:440},{type:'tank',count:6,interval:1400},{type:'revenant',count:4,interval:2000}],
-    [{type:'grunt',count:20,interval:450},{type:'runner',count:15,interval:390},{type:'tank',count:7,interval:1350},{type:'ghost',count:5,interval:1050}],
-    [{type:'grunt',count:22,interval:430},{type:'tank',count:7,interval:1350},{type:'revenant',count:5,interval:1900},{type:'ghost',count:5,interval:1000}],
-    [{type:'runner',count:22,interval:420},{type:'tank',count:8,interval:1300},{type:'revenant',count:5,interval:1900},{type:'ghost',count:5,interval:1000}],
-    [{type:'grunt',count:24,interval:410},{type:'runner',count:18,interval:380},{type:'tank',count:8,interval:1300},{type:'revenant',count:6,interval:1800}],
-    [{type:'grunt',count:27,interval:390},{type:'runner',count:22,interval:360},{type:'tank',count:10,interval:1250},{type:'revenant',count:6,interval:1700},{type:'ghost',count:6,interval:950}],
-    [{type:'grunt',count:32,interval:370},{type:'runner',count:26,interval:340},{type:'tank',count:13,interval:1200},{type:'revenant',count:8,interval:1600},{type:'ghost',count:7,interval:900}],
-  ],
-  6: [
-    [{type:'grunt',count:12,interval:560},{type:'runner',count:10,interval:460},{type:'tank',count:3,interval:1700},{type:'revenant',count:1,interval:2600}],
-    [{type:'grunt',count:13,interval:540},{type:'runner',count:11,interval:440},{type:'tank',count:3,interval:1650}],
-    [{type:'runner',count:14,interval:510},{type:'tank',count:4,interval:1600},{type:'revenant',count:2,interval:2400}],
-    [{type:'grunt',count:14,interval:520},{type:'runner',count:12,interval:430},{type:'tank',count:4,interval:1600},{type:'ghost',count:2,interval:1250}],
-    [{type:'grunt',count:15,interval:500},{type:'runner',count:13,interval:420},{type:'tank',count:4,interval:1550},{type:'revenant',count:2,interval:2300},{type:'ghost',count:2,interval:1200}],
-    [{type:'runner',count:16,interval:490},{type:'tank',count:5,interval:1500},{type:'revenant',count:3,interval:2200},{type:'ghost',count:3,interval:1150}],
-    [{type:'grunt',count:16,interval:480},{type:'runner',count:14,interval:410},{type:'tank',count:5,interval:1500},{type:'ghost',count:3,interval:1100}],
-    [{type:'grunt',count:17,interval:460},{type:'runner',count:15,interval:400},{type:'tank',count:5,interval:1450},{type:'revenant',count:3,interval:2100},{type:'ghost',count:4,interval:1100}],
-    [{type:'runner',count:18,interval:440},{type:'tank',count:6,interval:1400},{type:'revenant',count:4,interval:2000},{type:'ghost',count:4,interval:1050}],
-    [{type:'grunt',count:18,interval:450},{type:'runner',count:16,interval:390},{type:'tank',count:6,interval:1400},{type:'ghost',count:4,interval:1050}],
-    [{type:'grunt',count:20,interval:430},{type:'tank',count:7,interval:1350},{type:'revenant',count:4,interval:1950},{type:'ghost',count:5,interval:1000}],
-    [{type:'runner',count:20,interval:420},{type:'tank',count:7,interval:1350},{type:'revenant',count:5,interval:1900},{type:'ghost',count:5,interval:1000}],
-    [{type:'grunt',count:22,interval:410},{type:'runner',count:17,interval:380},{type:'tank',count:8,interval:1300},{type:'revenant',count:5,interval:1850}],
-    [{type:'runner',count:22,interval:400},{type:'tank',count:8,interval:1300},{type:'revenant',count:6,interval:1800},{type:'ghost',count:6,interval:950}],
-    [{type:'grunt',count:24,interval:400},{type:'runner',count:19,interval:370},{type:'tank',count:9,interval:1250},{type:'ghost',count:6,interval:950}],
-    [{type:'grunt',count:26,interval:380},{type:'runner',count:20,interval:360},{type:'tank',count:9,interval:1250},{type:'revenant',count:6,interval:1750},{type:'ghost',count:6,interval:900}],
-    [{type:'runner',count:26,interval:370},{type:'tank',count:10,interval:1200},{type:'revenant',count:7,interval:1700},{type:'ghost',count:7,interval:900}],
-    [{type:'grunt',count:28,interval:360},{type:'runner',count:22,interval:350},{type:'tank',count:11,interval:1200},{type:'revenant',count:7,interval:1650},{type:'ghost',count:7,interval:880}],
-    [{type:'grunt',count:32,interval:340},{type:'runner',count:26,interval:330},{type:'tank',count:13,interval:1150},{type:'revenant',count:9,interval:1600},{type:'ghost',count:8,interval:860}],
-    [{type:'grunt',count:38,interval:320},{type:'runner',count:32,interval:310},{type:'tank',count:16,interval:1100},{type:'revenant',count:11,interval:1550},{type:'ghost',count:10,interval:840}],
-  ],
-  7: [
-    [{type:'grunt',count:14,interval:530},{type:'runner',count:12,interval:430},{type:'tank',count:4,interval:1600},{type:'revenant',count:2,interval:2400},{type:'ghost',count:2,interval:1200}],
-    [{type:'runner',count:16,interval:500},{type:'tank',count:5,interval:1550},{type:'revenant',count:3,interval:2200},{type:'ghost',count:3,interval:1150}],
-    [{type:'grunt',count:16,interval:500},{type:'runner',count:13,interval:420},{type:'tank',count:5,interval:1500},{type:'ghost',count:4,interval:1100}],
-    [{type:'grunt',count:17,interval:480},{type:'runner',count:14,interval:410},{type:'tank',count:5,interval:1500},{type:'revenant',count:3,interval:2100},{type:'ghost',count:4,interval:1100}],
-    [{type:'runner',count:18,interval:460},{type:'tank',count:6,interval:1450},{type:'revenant',count:4,interval:2000},{type:'ghost',count:5,interval:1050}],
-    [{type:'grunt',count:18,interval:460},{type:'runner',count:15,interval:400},{type:'tank',count:6,interval:1450},{type:'ghost',count:5,interval:1050}],
-    [{type:'grunt',count:20,interval:440},{type:'tank',count:7,interval:1400},{type:'revenant',count:5,interval:1950},{type:'ghost',count:5,interval:1000}],
-    [{type:'runner',count:20,interval:430},{type:'tank',count:7,interval:1400},{type:'revenant',count:5,interval:1900},{type:'ghost',count:6,interval:1000}],
-    [{type:'grunt',count:22,interval:420},{type:'runner',count:17,interval:390},{type:'tank',count:7,interval:1350},{type:'revenant',count:5,interval:1900},{type:'ghost',count:6,interval:980}],
-    [{type:'runner',count:22,interval:400},{type:'tank',count:8,interval:1350},{type:'revenant',count:6,interval:1850},{type:'ghost',count:7,interval:960}],
-    [{type:'grunt',count:24,interval:400},{type:'runner',count:18,interval:380},{type:'tank',count:8,interval:1300},{type:'ghost',count:7,interval:950}],
-    [{type:'grunt',count:25,interval:390},{type:'tank',count:9,interval:1300},{type:'revenant',count:7,interval:1800},{type:'ghost',count:8,interval:940}],
-    [{type:'runner',count:25,interval:380},{type:'tank',count:9,interval:1280},{type:'revenant',count:7,interval:1780},{type:'ghost',count:8,interval:930}],
-    [{type:'grunt',count:26,interval:380},{type:'runner',count:20,interval:360},{type:'tank',count:10,interval:1250},{type:'revenant',count:8,interval:1750},{type:'ghost',count:8,interval:920}],
-    [{type:'runner',count:28,interval:360},{type:'tank',count:11,interval:1200},{type:'revenant',count:8,interval:1700},{type:'ghost',count:9,interval:900}],
-    [{type:'grunt',count:28,interval:360},{type:'runner',count:22,interval:340},{type:'tank',count:11,interval:1200},{type:'revenant',count:9,interval:1700},{type:'ghost',count:9,interval:890}],
-    [{type:'grunt',count:30,interval:340},{type:'tank',count:12,interval:1150},{type:'revenant',count:9,interval:1650},{type:'ghost',count:10,interval:870}],
-    [{type:'runner',count:30,interval:330},{type:'tank',count:13,interval:1150},{type:'revenant',count:10,interval:1600},{type:'ghost',count:10,interval:860}],
-    [{type:'grunt',count:36,interval:310},{type:'runner',count:28,interval:320},{type:'tank',count:15,interval:1100},{type:'revenant',count:12,interval:1550},{type:'ghost',count:12,interval:840}],
-    [{type:'grunt',count:44,interval:290},{type:'runner',count:36,interval:300},{type:'tank',count:20,interval:1050},{type:'revenant',count:15,interval:1500},{type:'ghost',count:14,interval:820}],
-  ],
-  8: [
-    [{type:'grunt',count:16,interval:500},{type:'runner',count:14,interval:410},{type:'tank',count:5,interval:1550},{type:'revenant',count:3,interval:2200},{type:'ghost',count:3,interval:1150}],
-    [{type:'runner',count:18,interval:470},{type:'tank',count:6,interval:1500},{type:'revenant',count:4,interval:2100},{type:'ghost',count:4,interval:1100}],
-    [{type:'grunt',count:18,interval:470},{type:'runner',count:15,interval:400},{type:'tank',count:6,interval:1500},{type:'revenant',count:4,interval:2000},{type:'ghost',count:5,interval:1050}],
-    [{type:'grunt',count:20,interval:450},{type:'runner',count:16,interval:390},{type:'tank',count:7,interval:1450},{type:'revenant',count:5,interval:1950},{type:'ghost',count:5,interval:1050}],
-    [{type:'runner',count:20,interval:430},{type:'tank',count:8,interval:1400},{type:'revenant',count:5,interval:1900},{type:'ghost',count:6,interval:1000}],
-    [{type:'grunt',count:22,interval:440},{type:'runner',count:17,interval:380},{type:'tank',count:8,interval:1400},{type:'ghost',count:6,interval:1000}],
-    [{type:'grunt',count:24,interval:420},{type:'tank',count:9,interval:1350},{type:'revenant',count:6,interval:1850},{type:'ghost',count:7,interval:970}],
-    [{type:'runner',count:24,interval:400},{type:'tank',count:9,interval:1350},{type:'revenant',count:6,interval:1850},{type:'ghost',count:7,interval:960}],
-    [{type:'grunt',count:26,interval:400},{type:'runner',count:20,interval:370},{type:'tank',count:10,interval:1300},{type:'revenant',count:7,interval:1800},{type:'ghost',count:8,interval:950}],
-    [{type:'runner',count:26,interval:380},{type:'tank',count:11,interval:1280},{type:'revenant',count:8,interval:1750},{type:'ghost',count:8,interval:940}],
-    [{type:'grunt',count:28,interval:380},{type:'runner',count:22,interval:360},{type:'tank',count:11,interval:1250},{type:'revenant',count:8,interval:1750},{type:'ghost',count:9,interval:930}],
-    [{type:'grunt',count:30,interval:360},{type:'tank',count:12,interval:1200},{type:'revenant',count:9,interval:1700},{type:'ghost',count:10,interval:920}],
-    [{type:'runner',count:30,interval:350},{type:'tank',count:12,interval:1200},{type:'revenant',count:9,interval:1700},{type:'ghost',count:10,interval:910}],
-    [{type:'grunt',count:32,interval:350},{type:'runner',count:24,interval:340},{type:'tank',count:14,interval:1150},{type:'revenant',count:10,interval:1650},{type:'ghost',count:11,interval:890}],
-    [{type:'runner',count:34,interval:330},{type:'tank',count:15,interval:1100},{type:'revenant',count:11,interval:1600},{type:'ghost',count:12,interval:870}],
-    [{type:'grunt',count:34,interval:330},{type:'runner',count:26,interval:320},{type:'tank',count:15,interval:1100},{type:'revenant',count:12,interval:1580},{type:'ghost',count:12,interval:860}],
-    [{type:'grunt',count:36,interval:310},{type:'tank',count:16,interval:1050},{type:'revenant',count:13,interval:1550},{type:'ghost',count:13,interval:850}],
-    [{type:'runner',count:36,interval:300},{type:'tank',count:17,interval:1050},{type:'revenant',count:14,interval:1520},{type:'ghost',count:14,interval:840}],
-    [{type:'grunt',count:42,interval:290},{type:'runner',count:32,interval:290},{type:'tank',count:19,interval:1000},{type:'revenant',count:16,interval:1500},{type:'ghost',count:15,interval:820}],
-    [{type:'grunt',count:52,interval:270},{type:'runner',count:42,interval:270},{type:'tank',count:26,interval:950},{type:'revenant',count:21,interval:1450},{type:'ghost',count:19,interval:800}],
-  ],
+  // ── L4：引入重生兵與幽靈兵 ────────────────────────────
   4: [
+    [{type:'grunt',count:6,interval:1000},{type:'runner',count:4,interval:750}],
+    [{type:'runner',count:7,interval:700},{type:'tank',count:1,interval:2600}],
+    [{type:'grunt',count:8,interval:950},{type:'runner',count:6,interval:680},{type:'tank',count:1,interval:2500}],
+    [{type:'runner',count:9,interval:660},{type:'tank',count:2,interval:2400}],
+    [{type:'grunt',count:9,interval:900},{type:'runner',count:7,interval:640},{type:'tank',count:2,interval:2300}],
+    [{type:'grunt',count:10,interval:880},{type:'tank',count:2,interval:2200}],
+    [{type:'runner',count:10,interval:620},{type:'tank',count:3,interval:2100}],
+    [{type:'grunt',count:11,interval:860},{type:'runner',count:8,interval:610},{type:'tank',count:3,interval:2000}],
+    [{type:'runner',count:11,interval:600},{type:'tank',count:3,interval:1950}],
+    [{type:'grunt',count:12,interval:840},{type:'runner',count:9,interval:590},{type:'tank',count:4,interval:1900}],
+    [{type:'grunt',count:13,interval:820},{type:'tank',count:4,interval:1850},{type:'revenant',count:1,interval:3000}],
+    [{type:'runner',count:12,interval:580},{type:'ghost',count:2,interval:1500},{type:'tank',count:4,interval:1800}],
+    [{type:'grunt',count:14,interval:800},{type:'runner',count:10,interval:570},{type:'revenant',count:2,interval:2800}],
+    [{type:'runner',count:13,interval:560},{type:'tank',count:5,interval:1750},{type:'ghost',count:2,interval:1400}],
+    [{type:'grunt',count:15,interval:780},{type:'runner',count:11,interval:550},{type:'revenant',count:2,interval:2600},{type:'ghost',count:2,interval:1400}],
+    [{type:'grunt',count:17,interval:760},{type:'tank',count:5,interval:1700},{type:'revenant',count:3,interval:2400}],
+    [{type:'runner',count:14,interval:540},{type:'ghost',count:3,interval:1300},{type:'tank',count:6,interval:1650}],
+    [{type:'grunt',count:18,interval:740},{type:'runner',count:13,interval:520},{type:'revenant',count:3,interval:2200},{type:'ghost',count:3,interval:1200}],
+    [{type:'grunt',count:20,interval:720},{type:'runner',count:15,interval:500},{type:'tank',count:7,interval:1600},{type:'revenant',count:4,interval:2000},{type:'ghost',count:3,interval:1100}],
+    [{type:'grunt',count:22,interval:700},{type:'runner',count:17,interval:480},{type:'tank',count:8,interval:1500},{type:'revenant',count:4,interval:1900},{type:'ghost',count:4,interval:1050}],
+  ],
+  // ── L5：全敵種混合，難度提升 ──────────────────────────
+  5: [
+    [{type:'grunt',count:7,interval:950},{type:'runner',count:5,interval:700},{type:'tank',count:1,interval:2500}],
+    [{type:'grunt',count:8,interval:900},{type:'runner',count:6,interval:680},{type:'tank',count:2,interval:2400}],
+    [{type:'runner',count:8,interval:660},{type:'tank',count:2,interval:2300}],
+    [{type:'grunt',count:9,interval:880},{type:'runner',count:7,interval:640},{type:'tank',count:2,interval:2200},{type:'revenant',count:1,interval:3000}],
+    [{type:'grunt',count:10,interval:860},{type:'runner',count:8,interval:620},{type:'tank',count:3,interval:2100},{type:'ghost',count:1,interval:1500}],
+    [{type:'runner',count:10,interval:600},{type:'tank',count:3,interval:2000},{type:'revenant',count:2,interval:2800}],
+    [{type:'grunt',count:11,interval:840},{type:'runner',count:9,interval:590},{type:'tank',count:3,interval:1950},{type:'ghost',count:2,interval:1450}],
+    [{type:'grunt',count:12,interval:820},{type:'runner',count:10,interval:580},{type:'tank',count:4,interval:1900},{type:'revenant',count:2,interval:2600}],
+    [{type:'runner',count:12,interval:560},{type:'tank',count:4,interval:1850},{type:'ghost',count:2,interval:1400}],
+    [{type:'grunt',count:13,interval:800},{type:'runner',count:10,interval:570},{type:'tank',count:4,interval:1800},{type:'revenant',count:2,interval:2500}],
+    [{type:'grunt',count:14,interval:780},{type:'tank',count:5,interval:1750},{type:'revenant',count:3,interval:2400},{type:'ghost',count:3,interval:1350}],
+    [{type:'runner',count:14,interval:540},{type:'tank',count:5,interval:1700},{type:'ghost',count:3,interval:1300}],
+    [{type:'grunt',count:15,interval:760},{type:'runner',count:11,interval:560},{type:'revenant',count:3,interval:2300},{type:'ghost',count:3,interval:1250}],
+    [{type:'runner',count:15,interval:530},{type:'tank',count:6,interval:1650},{type:'revenant',count:4,interval:2200}],
+    [{type:'grunt',count:17,interval:750},{type:'runner',count:12,interval:550},{type:'tank',count:6,interval:1600},{type:'ghost',count:4,interval:1200}],
+    [{type:'grunt',count:18,interval:730},{type:'tank',count:7,interval:1550},{type:'revenant',count:4,interval:2100},{type:'ghost',count:4,interval:1150}],
+    [{type:'runner',count:17,interval:510},{type:'tank',count:7,interval:1500},{type:'revenant',count:5,interval:2000},{type:'ghost',count:4,interval:1100}],
+    [{type:'grunt',count:20,interval:710},{type:'runner',count:15,interval:520},{type:'tank',count:8,interval:1450},{type:'revenant',count:5,interval:1900}],
+    [{type:'grunt',count:22,interval:690},{type:'runner',count:17,interval:500},{type:'tank',count:9,interval:1400},{type:'revenant',count:5,interval:1850},{type:'ghost',count:5,interval:1050}],
+    [{type:'grunt',count:24,interval:660},{type:'runner',count:19,interval:480},{type:'tank',count:9,interval:1350},{type:'revenant',count:5,interval:1800},{type:'ghost',count:5,interval:1000}],
+  ],
+  // ── L6：壓力加劇 ──────────────────────────────────────
+  6: [
+    [{type:'grunt',count:8,interval:900},{type:'runner',count:6,interval:680},{type:'tank',count:2,interval:2300}],
+    [{type:'grunt',count:9,interval:880},{type:'runner',count:7,interval:660},{type:'tank',count:2,interval:2200},{type:'revenant',count:1,interval:2800}],
+    [{type:'runner',count:9,interval:640},{type:'tank',count:3,interval:2100}],
+    [{type:'grunt',count:10,interval:860},{type:'runner',count:8,interval:620},{type:'tank',count:3,interval:2000},{type:'ghost',count:2,interval:1400}],
+    [{type:'grunt',count:11,interval:840},{type:'runner',count:9,interval:600},{type:'tank',count:3,interval:1950},{type:'revenant',count:2,interval:2600}],
+    [{type:'runner',count:11,interval:580},{type:'tank',count:4,interval:1900},{type:'ghost',count:2,interval:1350}],
+    [{type:'grunt',count:12,interval:820},{type:'runner',count:10,interval:580},{type:'tank',count:4,interval:1850},{type:'revenant',count:2,interval:2500}],
+    [{type:'grunt',count:13,interval:800},{type:'runner',count:11,interval:560},{type:'tank',count:4,interval:1800},{type:'ghost',count:3,interval:1300}],
+    [{type:'runner',count:13,interval:550},{type:'tank',count:5,interval:1750},{type:'revenant',count:3,interval:2400}],
+    [{type:'grunt',count:14,interval:780},{type:'runner',count:11,interval:550},{type:'tank',count:5,interval:1750},{type:'ghost',count:3,interval:1300}],
+    [{type:'grunt',count:15,interval:760},{type:'tank',count:6,interval:1700},{type:'revenant',count:3,interval:2300},{type:'ghost',count:4,interval:1250}],
+    [{type:'runner',count:15,interval:530},{type:'tank',count:6,interval:1650},{type:'ghost',count:4,interval:1200}],
+    [{type:'grunt',count:17,interval:750},{type:'runner',count:12,interval:540},{type:'revenant',count:4,interval:2200}],
+    [{type:'runner',count:16,interval:520},{type:'tank',count:7,interval:1600},{type:'revenant',count:4,interval:2100},{type:'ghost',count:5,interval:1150}],
+    [{type:'grunt',count:18,interval:730},{type:'runner',count:13,interval:530},{type:'tank',count:7,interval:1600},{type:'ghost',count:5,interval:1100}],
+    [{type:'grunt',count:20,interval:710},{type:'tank',count:8,interval:1550},{type:'revenant',count:5,interval:2000},{type:'ghost',count:5,interval:1050}],
+    [{type:'runner',count:19,interval:500},{type:'tank',count:8,interval:1500},{type:'revenant',count:5,interval:1950}],
+    [{type:'grunt',count:22,interval:690},{type:'runner',count:16,interval:510},{type:'tank',count:9,interval:1450},{type:'revenant',count:6,interval:1900},{type:'ghost',count:6,interval:1000}],
+    [{type:'grunt',count:24,interval:670},{type:'runner',count:18,interval:490},{type:'tank',count:10,interval:1400},{type:'revenant',count:6,interval:1800},{type:'ghost',count:6,interval:950}],
+    [{type:'grunt',count:26,interval:640},{type:'runner',count:21,interval:470},{type:'tank',count:11,interval:1350},{type:'revenant',count:6,interval:1750},{type:'ghost',count:6,interval:950}],
+  ],
+  // ── L7：接近 L8 強度 ──────────────────────────────────
+  7: [
+    [{type:'grunt',count:8,interval:1000},{type:'runner',count:5,interval:750}],
+    [{type:'runner',count:9,interval:680},{type:'tank',count:2,interval:2100}],
+    [{type:'grunt',count:9,interval:940},{type:'runner',count:7,interval:630},{type:'tank',count:2,interval:2000}],
+    [{type:'runner',count:11,interval:600},{type:'tank',count:2,interval:1950}],
+    [{type:'grunt',count:11,interval:860},{type:'runner',count:8,interval:580},{type:'tank',count:3,interval:1850}],
+    [{type:'grunt',count:13,interval:820},{type:'tank',count:3,interval:1750}],
+    [{type:'runner',count:13,interval:560},{type:'tank',count:4,interval:1750}],
+    [{type:'grunt',count:14,interval:780},{type:'runner',count:10,interval:530},{type:'tank',count:4,interval:1680}],
+    [{type:'runner',count:15,interval:520},{type:'tank',count:4,interval:1650}],
+    [{type:'grunt',count:15,interval:750},{type:'runner',count:11,interval:510},{type:'tank',count:5,interval:1580}],
+    [{type:'grunt',count:16,interval:720},{type:'tank',count:5,interval:1580},{type:'revenant',count:2,interval:2700}],
+    [{type:'runner',count:17,interval:490},{type:'ghost',count:3,interval:1380},{type:'tank',count:5,interval:1530}],
+    [{type:'grunt',count:17,interval:700},{type:'runner',count:13,interval:480},{type:'revenant',count:3,interval:2550}],
+    [{type:'runner',count:19,interval:460},{type:'tank',count:6,interval:1480},{type:'ghost',count:4,interval:1280}],
+    [{type:'grunt',count:19,interval:670},{type:'runner',count:14,interval:460},{type:'revenant',count:3,interval:2380},{type:'ghost',count:3,interval:1280}],
+    [{type:'grunt',count:21,interval:640},{type:'tank',count:7,interval:1380},{type:'revenant',count:4,interval:2180}],
+    [{type:'runner',count:21,interval:440},{type:'ghost',count:5,interval:1180},{type:'tank',count:7,interval:1380}],
+    [{type:'grunt',count:23,interval:620},{type:'runner',count:17,interval:420},{type:'revenant',count:4,interval:1980},{type:'ghost',count:4,interval:1080}],
+    [{type:'grunt',count:25,interval:590},{type:'runner',count:19,interval:400},{type:'tank',count:9,interval:1280},{type:'revenant',count:5,interval:1880},{type:'ghost',count:5,interval:980}],
+    [{type:'grunt',count:28,interval:560},{type:'runner',count:23,interval:380},{type:'tank',count:11,interval:1220},{type:'revenant',count:6,interval:1720},{type:'ghost',count:6,interval:910}],
+  ],
+  // ── L8：等同原 L4（最高難度） ─────────────────────────
+  8: [
     [{type:'grunt',count:8,interval:1000},{type:'runner',count:5,interval:750}],
     [{type:'runner',count:10,interval:650},{type:'tank',count:2,interval:2200}],
     [{type:'grunt',count:10,interval:900},{type:'runner',count:7,interval:600},{type:'tank',count:2,interval:2100}],
@@ -437,8 +445,8 @@ const TOWER_TYPES = {
     isFortress:true, hp:600,
     levels: [
       { hp:600,  cost:200, upgradeCost:350 },
-      { hp:900,  upgradeCost:500 },
-      { hp:1400, upgradeCost:null },
+      { hp:900,  upgradeCost:500,  slowRange:1.5, slowMult:0.80, regenHp:4,  regenInterval:5000 },
+      { hp:1400, upgradeCost:null, slowRange:2.0, slowMult:0.70, regenHp:8,  regenInterval:4000, counterDmg:25, counterRate:1500, counterRange:1.8 },
     ],
   },
 };
@@ -468,11 +476,12 @@ let friendlyUnits = [];
 let towerIdCounter = 0;
 
 const ENEMY_TYPES = {
-  grunt:    { name:'步兵',   emoji:'👾', color:'#e74c3c', hp:95,  speed:1.3, reward:10, size:14, attackDmg:13, attackRate:1300, attackRange:CELL_SIZE*1.4 },
-  runner:   { name:'快衝兵', emoji:'💨', color:'#e67e22', hp:50,  speed:2.8, reward:15, size:11, attackDmg:8,  attackRate:600,  attackRange:CELL_SIZE*1.1 },
-  tank:     { name:'重甲兵', emoji:'🛡️', color:'#2c3e50', hp:360, speed:0.7, reward:30, size:18, attackDmg:38, attackRate:1800, attackRange:CELL_SIZE*1.6 },
-  revenant: { name:'重生兵', emoji:'💀', color:'#7b1fa2', hp:155, speed:1.1, reward:25, size:15, attackDmg:18, attackRate:1400, attackRange:CELL_SIZE*1.4, canRevive:true },
-  ghost:    { name:'幽靈兵', emoji:'👻', color:'#90a4ae', hp:85,  speed:2.0, reward:20, size:13, attackDmg:10, attackRate:1100, attackRange:CELL_SIZE*1.2, isGhost:true },
+  grunt:    { name:'步兵',   emoji:'👾', color:'#e74c3c', hp:95,  speed:1.3, reward:10,  size:14, attackDmg:13, attackRate:1300, attackRange:CELL_SIZE*1.4 },
+  runner:   { name:'快衝兵', emoji:'💨', color:'#e67e22', hp:50,  speed:2.8, reward:15,  size:11, attackDmg:8,  attackRate:600,  attackRange:CELL_SIZE*1.1 },
+  tank:     { name:'重甲兵', emoji:'🛡️', color:'#2c3e50', hp:360, speed:0.7, reward:30,  size:18, attackDmg:38, attackRate:1800, attackRange:CELL_SIZE*1.6 },
+  revenant: { name:'重生兵', emoji:'💀', color:'#7b1fa2', hp:155, speed:1.1, reward:25,  size:15, attackDmg:18, attackRate:1400, attackRange:CELL_SIZE*1.4, canRevive:true },
+  ghost:    { name:'幽靈兵', emoji:'👻', color:'#90a4ae', hp:85,  speed:2.0, reward:20,  size:13, attackDmg:10, attackRate:1100, attackRange:CELL_SIZE*1.2, isGhost:true },
+  boss:     { name:'首領',   emoji:'👑', color:'#ff6f00', hp:3000,speed:0.45,reward:200, size:26, attackDmg:50, attackRate:1800, attackRange:CELL_SIZE*2.0, isBoss:true },
 };
 
 const BUILD_RANGE = 3 * CELL_SIZE;
@@ -483,12 +492,27 @@ function getKillBonus(){
   return b;
 }
 
+function getSellValue(tower){
+  const def=TOWER_TYPES[tower.type];
+  let total=def.levels[0].cost;
+  for(let i=1;i<tower.level;i++) total+=(def.levels[i-1].upgradeCost||0);
+  return Math.floor(total*0.6);
+}
+
 // ── 遊戲狀態 ─────────────────────────────────────────────
 let towers=[], enemies=[], bullets=[];
 let gold=300, wave=0, gameOver=false, WAVES=[], hero=null;
 let selectedTowerType='archer', selectedBuilding=null;
-let upgradeButtonBounds=null, trainUnitButtonBounds=[], researchButtonBounds=[];
-let hoverCol=-1, hoverRow=-1, animFrameId=null;
+let upgradeButtonBounds=null, sellButtonBounds=null, trainUnitButtonBounds=[], researchButtonBounds=[];
+let hoverCol=-1, hoverRow=-1, animFrameId=null, currentLevel=1;
+// 波次結算追蹤
+let waveKills=0, waveGoldEarned=0, waveDmgTaken=0;
+let waveSummary=null; // {kills, gold, dmg, waveNum, isBossWave}
+let waveSummaryExpire=0;
+// 通關進度
+const SAVE_KEY='tdCleared';
+function loadCleared(){ try{ return new Set(JSON.parse(localStorage.getItem(SAVE_KEY)||'[]')); }catch(e){ return new Set(); } }
+function saveCleared(lvl){ const s=loadCleared(); s.add(lvl); localStorage.setItem(SAVE_KEY,JSON.stringify([...s])); }
 const occupiedCells = new Set();
 const keys = {};
 
@@ -510,8 +534,10 @@ function initGame(levelNum) {
   gold=300; wave=0; gameOver=false;
   spawnQueue=[]; waveActive=false; waveComplete=false;
   nextWaveAt=0; nextWaveCountdown=0; towerIdCounter=0;
-  messageText=''; selectedBuilding=null; upgradeButtonBounds=null;
+  messageText=''; selectedBuilding=null; upgradeButtonBounds=null; sellButtonBounds=null;
   trainUnitButtonBounds=[]; researchButtonBounds=[];
+  waveKills=0; waveGoldEarned=0; waveDmgTaken=0; waveSummary=null; waveSummaryExpire=0;
+  currentLevel=levelNum;
   occupiedCells.clear();
   selectedTowerType='archer';
   document.querySelectorAll('.tower-btn').forEach(b=>b.classList.remove('active'));
@@ -520,6 +546,7 @@ function initGame(levelNum) {
   hero = new Hero();
   if (animFrameId) cancelAnimationFrame(animFrameId);
   animFrameId = requestAnimationFrame(gameLoop);
+  SFX.startBGM();
   nextWaveAt = performance.now()+3000;
 }
 
@@ -527,23 +554,24 @@ function initGame(levelNum) {
 class Hero {
   constructor(){
     this.x=1*CELL_SIZE+CELL_SIZE/2; this.y=13*CELL_SIZE+CELL_SIZE/2;
-    this.size=14; this.range=2.5*CELL_SIZE;
+    this.size=14; this.range=2.8*CELL_SIZE;
     this.lastAttack=0; this.dead=false; this.invincible=0;
-    this.maxHp=200; this.hp=200;
-    this.damage=30; this.attackRate=700; this.speed=3;
+    this.maxHp=260; this.hp=260;
+    this.damage=40; this.attackRate=620; this.speed=3.3;
     this.applyResearch();
   }
   applyResearch(){
     const wasAtFull=this.hp>=this.maxHp;
-    this.maxHp=Math.floor(200*(researchDone.has('heroHp')?1.25:1));
+    this.maxHp=Math.floor(260*(researchDone.has('heroHp')?1.25:1));
     this.hp=wasAtFull?this.maxHp:Math.min(this.hp,this.maxHp);
-    this.damage=Math.floor(30*(researchDone.has('heroDmg')?1.25:1));
-    this.attackRate=Math.floor(700*(researchDone.has('heroAtk')?0.8:1));
-    this.speed=3*(researchDone.has('heroSpd')?1.2:1);
+    this.damage=Math.floor(40*(researchDone.has('heroDmg')?1.25:1));
+    this.attackRate=Math.floor(620*(researchDone.has('heroAtk')?0.8:1));
+    this.speed=3.3*(researchDone.has('heroSpd')?1.2:1);
   }
   takeDamage(dmg, now){
     if(now<this.invincible) return;
     this.hp-=dmg;
+    waveDmgTaken+=dmg;
     if(this.hp<=0){
       this.hp=this.maxHp;
       this.x=1*CELL_SIZE+CELL_SIZE/2; this.y=13*CELL_SIZE+CELL_SIZE/2;
@@ -568,7 +596,7 @@ class Hero {
         const d=Math.sqrt((e.x-this.x)**2+(e.y-this.y)**2);
         if(d<minD){minD=d; target=e;}
       }
-      if(target){ this.lastAttack=now; bullets.push(new Bullet(this.x,this.y,target,this.damage,'#00e5ff',7,false,0)); }
+      if(target){ this.lastAttack=now; SFX.heroShoot(); bullets.push(new Bullet(this.x,this.y,target,this.damage,'#00e5ff',7,false,0)); }
     }
   }
   draw(now){
@@ -608,7 +636,7 @@ class Enemy {
     this.maxHp=def.hp; this.hp=def.hp;
     this.speed=def.speed; this.reward=def.reward; this.size=def.size;
     this.attackDmg=def.attackDmg; this.attackRate=def.attackRate; this.attackRange=def.attackRange;
-    this.lastAttack=0; this.slowUntil=0;
+    this.lastAttack=0; this.slowUntil=0; this.fortSlowUntil=0; this.fortSlowMult=1;
     this.revived=false; this.reviveFlash=0; this.hitFlash=0;
     this.ghost=def.isGhost||false;
     this.wpIndex=0;
@@ -626,7 +654,11 @@ class Enemy {
       return; // 不死，復活
     }
     this.dead=true;
-    gold+=this.reward+bonus;
+    SFX.die(ENEMY_TYPES[this.type].isBoss||false);
+    const earned=this.reward+bonus;
+    gold+=earned;
+    waveKills++;
+    waveGoldEarned+=earned;
   }
   recalculatePath(){
     const newPath=findPath();
@@ -712,8 +744,10 @@ class Enemy {
       return; // 停步
     }
 
-    // ── 移動（冰凍減速 + 爬坡減速）──
-    let effSpeed=(now<this.slowUntil)?this.speed*0.35:this.speed;
+    // ── 移動（冰凍減速 + 堡壘緩速 + 爬坡減速）──
+    let effSpeed=this.speed;
+    if(now<this.slowUntil) effSpeed*=0.35;
+    if(now<this.fortSlowUntil) effSpeed*=this.fortSlowMult;
     if(this.wpIndex>=this.path.length-1){
       // 抵達堡壘
       const fort=towers.find(t=>TOWER_TYPES[t.type].isFortress);
@@ -876,6 +910,7 @@ class Tower {
   takeDamage(dmg){
     this.hp-=dmg;
     this.hitFlash=performance.now()+220;
+    if(TOWER_TYPES[this.type].isFortress){ waveDmgTaken+=dmg; SFX.fortressHit(); }
     if(this.hp<=0) this.destroy();
   }
   destroy(){
@@ -883,6 +918,7 @@ class Tower {
     if(TOWER_TYPES[this.type].isFortress){
       showMessage('🏰 堡壘陷落！遊戲結束',4000);
       gameOver=true;
+      SFX.gameOver(); SFX.stopBGM();
     }
     const k=`${this.row},${this.col}`;
     const idx=towers.indexOf(this);
@@ -906,6 +942,13 @@ class Tower {
       const ratio=this.maxHp>0?this.hp/this.maxHp:1;
       this.maxHp=newMax;
       this.hp=Math.min(Math.ceil(newMax*ratio),newMax);
+      this.slowRange   = s.slowRange   ? s.slowRange*CELL_SIZE : 0;
+      this.slowMult    = s.slowMult    ?? 1;
+      this.regenHp     = s.regenHp     ?? 0;
+      this.regenInterval = s.regenInterval ?? 0;
+      this.counterDmg  = s.counterDmg  ?? 0;
+      this.counterRate = s.counterRate ?? 0;
+      this.counterRange= s.counterRange ? s.counterRange*CELL_SIZE : 0;
     }
     else if(def.isChain){
       this.range=s.range*CELL_SIZE; this.damage=s.damage; this.fireRate=s.fireRate;
@@ -922,15 +965,59 @@ class Tower {
   tryUpgrade(){
     const c=this.upgradeCost;
     if(!c||this.level>=3||gold<c) return false;
-    gold-=c; this.level++; this._apply(); return true;
+    gold-=c; this.level++; this._apply(); SFX.upgrade(); return true;
   }
   update(now){
     const def=TOWER_TYPES[this.type];
+    if(!def.isFortress && !towers.some(t=>TOWER_TYPES[t.type].isFortress)) return;
     if(def.isEconomic){
       if(now-this.lastTick>=this.tickInterval){this.lastTick=now; gold+=this.goldPerTick;}
       return;
     }
-    if(def.isMarket||def.isLab||def.isFortress) return; // 純被動
+    if(def.isMarket||def.isLab) return; // 純被動
+    if(def.isFortress){
+      // ── 緩速光環（2級+）──
+      if(this.slowRange>0){
+        for(const e of enemies){
+          if(e.dead) continue;
+          const dx=e.x-this.x, dy=e.y-this.y;
+          if(dx*dx+dy*dy<=this.slowRange*this.slowRange){
+            e.fortSlowUntil=now+600;
+            e.fortSlowMult=this.slowMult;
+          }
+        }
+      }
+      // ── HP 再生（2級+）──
+      if(this.regenHp>0&&this.regenInterval>0&&this.hp<this.maxHp){
+        if(now-this.lastTick>=this.regenInterval){
+          this.lastTick=now;
+          this.hp=Math.min(this.maxHp, this.hp+this.regenHp);
+        }
+      }
+      // ── 自動反擊（3級）──
+      if(this.counterDmg>0&&now-this.lastShot>=this.counterRate){
+        let target=null, minD=this.counterRange;
+        for(const e of enemies){
+          if(e.dead||!e.reached) continue; // 只打正在攻打堡壘的敵人
+          const d=Math.sqrt((e.x-this.x)**2+(e.y-this.y)**2);
+          if(d<minD){minD=d; target=e;}
+        }
+        if(!target){ // 備選：打範圍內最近敵人
+          for(const e of enemies){
+            if(e.dead) continue;
+            const dx=e.x-this.x, dy=e.y-this.y, d=Math.sqrt(dx*dx+dy*dy);
+            if(d<minD){minD=d; target=e;}
+          }
+        }
+        if(target){
+          this.lastShot=now;
+          target.hp-=this.counterDmg;
+          target.hitFlash=now+200;
+          if(target.hp<=0) target.tryKill(getKillBonus());
+        }
+      }
+      return;
+    }
     if(def.isTraining){
       const effInterval=this.trainInterval*(researchDone.has('trainSpeed')?0.65:1);
       const myUnits=friendlyUnits.filter(u=>u.source===this&&!u.dead);
@@ -956,6 +1043,7 @@ class Tower {
       const targets=inRange.slice(0,this.chainCount);
       if(targets.length===0) return;
       this.lastShot=now;
+      SFX.shoot('lightning');
       this.lightningTargets=targets.map(e=>({x:e.x,y:e.y}));
       this.lightningExpire=now+220;
       for(const e of targets){
@@ -974,11 +1062,19 @@ class Tower {
     }
     if(!target) return;
     this.lastShot=now;
+    SFX.shoot(this.type);
     const slowEff=def.slow?{duration:def.slowDuration}:null;
     bullets.push(new Bullet(this.x,this.y,target,this.damage,this.bulletColor,this.bulletSpeed,this.splash,this.splashRadius,slowEff));
   }
   drawRange(){
     const def=TOWER_TYPES[this.type];
+    if(def.isFortress&&this.slowRange>0){
+      const {x:sx,y:sy}=worldToScreen(this.x,this.y);
+      ctx.beginPath(); ctx.arc(sx,sy,this.slowRange,0,Math.PI*2);
+      ctx.strokeStyle='rgba(100,220,255,0.3)'; ctx.lineWidth=1; ctx.stroke();
+      ctx.fillStyle='rgba(100,220,255,0.04)'; ctx.fill();
+      return;
+    }
     if(def.isEconomic||def.isMarket||def.isTraining||def.isLab||def.isFortress) return;
     const {x:sx,y:sy}=worldToScreen(this.x,this.y);
     ctx.beginPath(); ctx.arc(sx,sy,this.range,0,Math.PI*2);
@@ -1049,11 +1145,20 @@ let waveComplete=false,nextWaveAt=0,nextWaveCountdown=0;
 
 function startWave(){
   if(wave>=WAVES.length){waveComplete=true;return;}
+  SFX.waveStart();
   spawnQueue=[];
   for(const g of WAVES[wave])
     for(let i=0;i<g.count;i++) spawnQueue.push({type:g.type,delay:i*g.interval});
+  // Boss 波：第10波、第20波各出現一隻首領
+  const isBossWave=(wave+1)===10||(wave+1)===20;
+  if(isBossWave){
+    spawnQueue.push({type:'boss',delay:0});
+    showMessage('👑 首領現身！',3500);
+  }
   spawnQueue.sort((a,b)=>a.delay-b.delay);
   spawnTimer=performance.now(); waveActive=true; wave++;
+  // 重置本波結算計數
+  waveKills=0; waveGoldEarned=0; waveDmgTaken=0;
   nextWaveAt=wave<WAVES.length?performance.now()+WAVE_INTERVAL:0;
 }
 function updateSpawn(now){
@@ -1067,9 +1172,18 @@ function updateSpawn(now){
   if(!waveActive) return;
   while(spawnQueue.length&&now-spawnTimer>=spawnQueue[0].delay)
     enemies.push(new Enemy(spawnQueue.shift().type));
-  if(spawnQueue.length===0&&enemies.every(e=>e.dead||e.reached)){
+  if(spawnQueue.length===0&&enemies.every(e=>e.dead)){
     waveActive=false;
-    if(wave>=WAVES.length) waveComplete=true;
+    // 顯示波次結算
+    const isBossWave=wave===10||wave===20;
+    waveSummary={kills:waveKills,gold:waveGoldEarned,dmg:Math.floor(waveDmgTaken),waveNum:wave,isBossWave};
+    waveSummaryExpire=performance.now()+4000;
+    if(wave>=WAVES.length){
+      waveComplete=true;
+      SFX.victory(); SFX.stopBGM();
+      saveCleared(currentLevel);
+      refreshLevelCards();
+    }
   }
 }
 
@@ -1222,6 +1336,29 @@ function drawHUD(){
     ctx.globalAlpha=1;
   }
   drawUpgradePanel();
+  // 波次結算面板
+  if(waveSummary&&now<waveSummaryExpire&&!waveActive){
+    const alpha=Math.min(1,(waveSummaryExpire-now)/600);
+    const pW=260,pH=waveSummary.isBossWave?130:110;
+    const px=canvas.width/2-pW/2, py=TOP_OFFSET+8;
+    ctx.save(); ctx.globalAlpha=alpha*0.96;
+    ctx.fillStyle='rgba(5,15,40,0.95)';
+    ctx.beginPath(); ctx.roundRect(px,py,pW,pH,10); ctx.fill();
+    ctx.strokeStyle=waveSummary.isBossWave?'#ff6f00':'#00e5ff'; ctx.lineWidth=1.8; ctx.stroke();
+    ctx.globalAlpha=alpha;
+    ctx.font='bold 14px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillStyle='#fff';
+    const title=waveSummary.isBossWave?`👑 第 ${waveSummary.waveNum} 波結算（首領波！）`:`⚔️ 第 ${waveSummary.waveNum} 波結算`;
+    ctx.fillText(title, px+pW/2, py+12);
+    ctx.font='13px sans-serif'; ctx.fillStyle='#aef'; ctx.textAlign='left';
+    ctx.fillText(`🗡️  擊殺敵人：${waveSummary.kills} 隻`, px+20, py+40);
+    ctx.fillText(`💰  獲得金幣：+${waveSummary.gold}`, px+20, py+60);
+    ctx.fillText(`🛡️  承受傷害：${waveSummary.dmg}`, px+20, py+80);
+    if(waveSummary.isBossWave){
+      ctx.font='bold 12px sans-serif'; ctx.fillStyle='#ffa040'; ctx.textAlign='center';
+      ctx.fillText('首領已擊倒！豐厚獎勵到手', px+pW/2, py+108);
+    }
+    ctx.restore();
+  }
   // 虛擬搖桿
   if(joystick.active){
     ctx.save();
@@ -1239,7 +1376,7 @@ function drawHUD(){
 }
 
 function drawUpgradePanel(){
-  upgradeButtonBounds=null; trainUnitButtonBounds=[]; researchButtonBounds=[];
+  upgradeButtonBounds=null; sellButtonBounds=null; trainUnitButtonBounds=[]; researchButtonBounds=[];
   if(!selectedBuilding) return;
   const t=selectedBuilding, def=TOWER_TYPES[t.type];
   const now=performance.now();
@@ -1250,7 +1387,9 @@ function drawUpgradePanel(){
   const stats=def.levels[t.level-1], upCost=t.upgradeCost;
   const elev=elevData[t.row][t.col];
   const sx=t.col*CELL_SIZE+CELL_SIZE/2, sy=tileY(t.row,elev);
-  const pW=210, pH=upCost?120:100;
+  const pW=210;
+  let baseH = def.isFortress ? (t.level===1?100 : t.level===2?116 : 132) : (upCost?120:100);
+  const pH = baseH + 34; // 額外34px給出售按鈕
   let px=sx-pW/2, py=sy-pH-8;
   px=Math.max(4,Math.min(canvas.width-pW-4,px));
   py=Math.max(4,py<4?sy+CELL_SIZE+4:py);
@@ -1265,6 +1404,17 @@ function drawUpgradePanel(){
   if(def.isEconomic)     ctx.fillText(`💰 每${stats.tickInterval/1000}s 產出 ${stats.goldPerTick}金`, px+10, py+34);
   else if(def.isMarket)  ctx.fillText(`🏷️ 每擊殺 +${stats.bonusPerKill}金`, px+10, py+34);
   else if(def.isChain)   ctx.fillText(`⚡${stats.damage}  📡${stats.range/CELL_SIZE}  🔗${stats.chainCount}目標  ⏱${(stats.fireRate/1000).toFixed(1)}s`, px+10, py+34);
+  else if(def.isFortress){
+    ctx.fillText(`❤️ ${Math.ceil(t.hp)} / ${t.maxHp}`, px+10, py+34);
+    if(t.level>=2){
+      ctx.fillStyle='#80deea';
+      ctx.fillText(`🧊 緩速光環 ${stats.slowRange}格  ⚕️ 再生 +${stats.regenHp}HP/${stats.regenInterval/1000}s`, px+10, py+50);
+    }
+    if(t.level>=3){
+      ctx.fillStyle='#ffcc80';
+      ctx.fillText(`⚔️ 自動反擊 ${stats.counterDmg}傷害 / ${stats.counterRate/1000}s`, px+10, py+66);
+    }
+  }
   else                   ctx.fillText(`⚔️${stats.damage}  📡${stats.range/CELL_SIZE}  ⏱${(stats.fireRate/1000).toFixed(1)}s`, px+10, py+34);
   if(upCost){
     const next=def.levels[t.level];
@@ -1272,9 +1422,13 @@ function drawUpgradePanel(){
     if(def.isEconomic)    ctx.fillText(`→Lv${t.level+1}: 每${next.tickInterval/1000}s +${next.goldPerTick}金`, px+10, py+54);
     else if(def.isMarket) ctx.fillText(`→Lv${t.level+1}: 每擊殺 +${next.bonusPerKill}金`, px+10, py+54);
     else if(def.isChain)  ctx.fillText(`→Lv${t.level+1}: ⚡${next.damage} 🔗${next.chainCount}目標`, px+10, py+54);
+    else if(def.isFortress){
+      const yOff=t.level===1?34:t.level===2?66:34;
+      ctx.fillText(`→Lv${t.level+1}: ❤️HP ${next.hp}${next.slowRange?`  🧊緩速${next.slowRange}格`:''}${next.counterDmg?`  ⚔️反擊${next.counterDmg}`:''}`, px+10, py+yOff+20);
+    }
     else                  ctx.fillText(`→Lv${t.level+1}: ⚔️${next.damage} 📡${next.range} ⏱${(next.fireRate/1000).toFixed(1)}s`, px+10, py+54);
     const canUp=gold>=upCost&&isInBuildRange(t.row,t.col);
-    const bx=px+10,by=py+76,bw=pW-20,bh=28;
+    const bx=px+10,by=py+baseH-44,bw=pW-20,bh=28;
     ctx.fillStyle=canUp?'#1e6e3a':'#333';
     ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,5); ctx.fill();
     ctx.strokeStyle=canUp?'#2ecc71':'#555'; ctx.lineWidth=1; ctx.stroke();
@@ -1286,7 +1440,18 @@ function drawUpgradePanel(){
   } else {
     ctx.font='bold 13px sans-serif'; ctx.fillStyle='#f1c40f';
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('🏆 已達最高等級', px+pW/2, py+pH-20);
+    ctx.fillText('🏆 已達最高等級', px+pW/2, py+pH-54);
+  }
+  // ── 出售按鈕（所有建築共用，堡壘除外）──
+  if(!def.isFortress&&isInBuildRange(t.row,t.col)){
+    const sv=getSellValue(t);
+    const sbx=px+10,sby=py+pH-30,sbw=pW-20,sbh=24;
+    ctx.fillStyle='rgba(120,20,20,0.85)';
+    ctx.beginPath(); ctx.roundRect(sbx,sby,sbw,sbh,5); ctx.fill();
+    ctx.strokeStyle='#e74c3c'; ctx.lineWidth=1; ctx.stroke();
+    ctx.font='bold 11px sans-serif'; ctx.fillStyle='#faa'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(`🗑️ 出售  退款 ${sv}💰`, sbx+sbw/2, sby+sbh/2);
+    sellButtonBounds={x:sbx,y:sby,w:sbw,h:sbh,tower:t};
   }
 }
 
@@ -1298,7 +1463,7 @@ function drawTrainingPanel(t, def, now){
   const upCost=t.upgradeCost;
   const btnH=28, btnGap=5;
   const pW=230;
-  const pH=14+24+8+18+10+6+10+available.length*(btnH+btnGap)+(upCost?44:0)+16;
+  const pH=14+24+8+18+10+6+10+available.length*(btnH+btnGap)+(upCost?44:0)+16+34;
   const elev=elevData[t.row][t.col];
   const sx=t.col*CELL_SIZE+CELL_SIZE/2, sy=tileY(t.row,elev);
   let px=sx-pW/2, py=sy-pH-8;
@@ -1360,7 +1525,17 @@ function drawTrainingPanel(t, def, now){
   } else {
     ctx.font='bold 13px sans-serif'; ctx.fillStyle='#f1c40f';
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('🏆 已達最高等級', px+pW/2, py+pH-12);
+    ctx.fillText('🏆 已達最高等級', px+pW/2, py+pH-44);
+  }
+  if(isInBuildRange(t.row,t.col)){
+    const sv=getSellValue(t);
+    const sbx=px+10,sby=py+pH-30,sbw=pW-20,sbh=24;
+    ctx.fillStyle='rgba(120,20,20,0.85)';
+    ctx.beginPath(); ctx.roundRect(sbx,sby,sbw,sbh,5); ctx.fill();
+    ctx.strokeStyle='#e74c3c'; ctx.lineWidth=1; ctx.stroke();
+    ctx.font='bold 11px sans-serif'; ctx.fillStyle='#faa'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(`🗑️ 出售  退款 ${sv}💰`, sbx+sbw/2, sby+sbh/2);
+    sellButtonBounds={x:sbx,y:sby,w:sbw,h:sbh,tower:t};
   }
 }
 
@@ -1369,7 +1544,7 @@ function drawLabPanel(t, def, now){
   const upCost=t.upgradeCost;
   const itemH=34, sectionH=22;
   const pW=240;
-  const pH=14+26+8+RESEARCH_ITEMS.length*itemH+sectionH+(upCost?44:0)+14;
+  const pH=14+26+8+RESEARCH_ITEMS.length*itemH+sectionH+(upCost?44:0)+14+34;
   const elev=elevData[t.row][t.col];
   const sx=t.col*CELL_SIZE+CELL_SIZE/2, sy=tileY(t.row,elev);
   let px=sx-pW/2, py=sy-pH-8;
@@ -1438,7 +1613,17 @@ function drawLabPanel(t, def, now){
   } else {
     ctx.font='bold 13px sans-serif'; ctx.fillStyle='#f1c40f';
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('🏆 已達最高等級', px+pW/2, py+pH-12);
+    ctx.fillText('🏆 已達最高等級', px+pW/2, py+pH-44);
+  }
+  if(isInBuildRange(t.row,t.col)){
+    const sv=getSellValue(t);
+    const sbx=px+8,sby=py+pH-30,sbw=pW-16,sbh=24;
+    ctx.fillStyle='rgba(120,20,20,0.85)';
+    ctx.beginPath(); ctx.roundRect(sbx,sby,sbw,sbh,5); ctx.fill();
+    ctx.strokeStyle='#e74c3c'; ctx.lineWidth=1; ctx.stroke();
+    ctx.font='bold 11px sans-serif'; ctx.fillStyle='#faa'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(`🗑️ 出售  退款 ${sv}💰`, sbx+sbw/2, sby+sbh/2);
+    sellButtonBounds={x:sbx,y:sby,w:sbw,h:sbh,tower:t};
   }
 }
 
@@ -1529,6 +1714,18 @@ canvas.addEventListener('click', e=>{
   if(gameOver) return;
   const rect=canvas.getBoundingClientRect();
   const cx=e.clientX-rect.left, cy=e.clientY-rect.top;
+  // 出售按鈕
+  if(sellButtonBounds){
+    const b=sellButtonBounds;
+    if(cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h){
+      const sv=getSellValue(b.tower);
+      b.tower.destroy();
+      gold+=sv;
+      showMessage(`💰 出售成功，退款 ${sv} 金幣`);
+      sellButtonBounds=null;
+      return;
+    }
+  }
   // 升級按鈕
   if(upgradeButtonBounds){
     const b=upgradeButtonBounds;
@@ -1575,9 +1772,35 @@ canvas.addEventListener('click', e=>{
   if(!findPath(testOcc)){showMessage('⚠️ 不能完全封鎖路徑！');return;}
   gold-=cost;
   towers.push(new Tower(row,col,selectedTowerType));
+  SFX.build();
   occupiedCells.add(key);
   recalculateAllPaths();
 });
+
+// ── 關卡進度（localStorage）──────────────────────────────
+function refreshLevelCards(){
+  const cleared=loadCleared();
+  document.querySelectorAll('.level-card').forEach(card=>{
+    const lvl=parseInt(card.getAttribute('data-level'));
+    if(!lvl) return;
+    card.querySelector('.level-clear-badge')?.remove();
+    if(cleared.has(lvl)){
+      const badge=document.createElement('div');
+      badge.className='level-clear-badge';
+      badge.textContent='✓';
+      card.appendChild(badge);
+      card.classList.add('cleared');
+    } else {
+      card.classList.remove('cleared');
+    }
+  });
+}
+// 頁面載入時刷新一次
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',refreshLevelCards);
+} else {
+  refreshLevelCards();
+}
 
 // ── 虛擬搖桿：觸控事件 ───────────────────────────────────
 function getCanvasPos(touch){
