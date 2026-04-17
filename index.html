@@ -136,6 +136,23 @@
     </div>
   </div>
 
+  <!-- ══ XP 升級面板 ══ -->
+  <div id="xp-panel">
+    <div id="xp-header">
+      <span id="xp-title">✨ 英雄成長</span>
+      <div id="xp-bar-wrap">
+        <div id="xp-bar-fill"></div>
+      </div>
+      <span id="xp-amount">0 XP</span>
+    </div>
+
+    <div class="xp-section-title">⬆️ 屬性升級</div>
+    <div id="upgrade-grid"></div>
+
+    <div class="xp-section-title">🌟 特殊技能</div>
+    <div id="skill-grid"></div>
+  </div>
+
   <!-- ══ 圖鑑區 ══ -->
   <div id="intro-section">
     <h2 class="intro-heading">📖 圖鑑</h2>
@@ -667,10 +684,12 @@
     function backToSelect() {
       document.getElementById('game-screen').style.display = 'none';
       document.getElementById('level-select-screen').style.display = 'flex';
+      document.getElementById('xp-panel').style.display = 'flex';
       document.getElementById('intro-section').style.display = 'flex';
       cancelAnimationFrame(animFrameId);
       SFX.stopBGM();
       refreshLevelCards();
+      refreshXPPanel();
     }
     function showIntroTab(tab) {
       document.querySelectorAll('.itab-content').forEach(el => el.classList.remove('active'));
@@ -681,10 +700,77 @@
 
     function startLevel(levelNum) {
       document.getElementById('level-select-screen').style.display = 'none';
+      document.getElementById('xp-panel').style.display = 'none';
       document.getElementById('intro-section').style.display = 'none';
       document.getElementById('game-screen').style.display = 'flex';
       initGame(levelNum);
       rescaleMap();
+    }
+
+    // ── XP 面板渲染 ──────────────────────────────────────────
+    function _refreshXPPanelImpl() {
+      const d = loadPlayerData();
+
+      // XP 顯示
+      document.getElementById('xp-amount').textContent = d.xp + ' XP';
+      // 計算下一個升級/技能所需的最小XP（作為進度條參考）
+      let nextCost = Infinity;
+      for (const [key, def] of Object.entries(UPGRADE_DEFS)) {
+        const lv = d.upgrades[key] || 0;
+        if (lv < def.maxLevel) nextCost = Math.min(nextCost, def.costs[lv]);
+      }
+      for (const sk of SKILL_DEFS) {
+        if (!d.skills.includes(sk.id)) nextCost = Math.min(nextCost, sk.cost);
+      }
+      const barPct = nextCost === Infinity ? 100 : Math.min(100, Math.floor(d.xp / nextCost * 100));
+      document.getElementById('xp-bar-fill').style.width = barPct + '%';
+
+      // 屬性升級
+      const ugGrid = document.getElementById('upgrade-grid');
+      ugGrid.innerHTML = '';
+      for (const [key, def] of Object.entries(UPGRADE_DEFS)) {
+        const lv = d.upgrades[key] || 0;
+        const maxed = lv >= def.maxLevel;
+        const cost = maxed ? null : def.costs[lv];
+        const canBuy = !maxed && d.xp >= cost;
+        const pips = '●'.repeat(lv) + '○'.repeat(def.maxLevel - lv);
+        const card = document.createElement('div');
+        card.className = 'xp-upgrade-card' + (maxed ? ' xp-card-maxed' : '');
+        card.innerHTML = `
+          <div class="xp-card-name">${def.name}</div>
+          <div class="xp-card-desc">${def.desc}</div>
+          <div class="xp-card-pips">${pips}</div>
+          ${maxed
+            ? '<div class="xp-card-maxlabel">✅ 已滿級</div>'
+            : `<button class="xp-buy-btn${canBuy ? '' : ' xp-buy-disabled'}" onclick="buyUpgrade('${key}')">${cost} XP 升級</button>`
+          }`;
+        ugGrid.appendChild(card);
+      }
+
+      // 技能
+      const skGrid = document.getElementById('skill-grid');
+      skGrid.innerHTML = '';
+      for (const sk of SKILL_DEFS) {
+        const owned = d.skills.includes(sk.id);
+        const canBuy = !owned && d.xp >= sk.cost;
+        const card = document.createElement('div');
+        card.className = 'xp-skill-card' + (owned ? ' xp-card-owned' : '');
+        card.innerHTML = `
+          <div class="xp-card-name">${sk.name}</div>
+          <div class="xp-card-desc">${sk.desc}</div>
+          ${owned
+            ? '<div class="xp-card-maxlabel">✅ 已解鎖</div>'
+            : `<button class="xp-buy-btn${canBuy ? '' : ' xp-buy-disabled'}" onclick="buySkill('${sk.id}')">${sk.cost} XP 解鎖</button>`
+          }`;
+        skGrid.appendChild(card);
+      }
+    }
+
+    // 頁面載入後渲染 XP 面板
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', _refreshXPPanelImpl);
+    } else {
+      _refreshXPPanelImpl();
     }
 
 

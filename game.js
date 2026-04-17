@@ -577,6 +577,62 @@ let waveSummaryExpire=0;
 const SAVE_KEY='tdCleared';
 function loadCleared(){ try{ return new Set(JSON.parse(localStorage.getItem(SAVE_KEY)||'[]')); }catch(e){ return new Set(); } }
 function saveCleared(lvl){ const s=loadCleared(); s.add(lvl); localStorage.setItem(SAVE_KEY,JSON.stringify([...s])); }
+
+// ── 玩家進度（跨關卡持久化 XP 系統）────────────────────────
+const PLAYER_KEY='tdPlayerData_v1';
+const UPGRADE_DEFS={
+  hp:       {name:'❤️ 最大HP',   desc:'主角 HP +15%/級',  maxLevel:5, costs:[100,150,200,300,400]},
+  damage:   {name:'⚔️ 攻擊力',   desc:'主角傷害 +15%/級', maxLevel:5, costs:[100,150,200,300,400]},
+  atkSpeed: {name:'⚡ 攻擊速度', desc:'主角攻速 +10%/級', maxLevel:5, costs:[120,180,240,350,500]},
+  speed:    {name:'💨 移動速度', desc:'主角移速 +10%/級', maxLevel:5, costs:[80,120,160,220,300]},
+};
+const SKILL_DEFS=[
+  {id:'rebirth',      name:'🔥 浴火重生',  cost:500, desc:'每關一次：HP歸零時原地滿血復活，無需回到起點'},
+  {id:'richStart',    name:'💰 軍需充裕',  cost:400, desc:'每關開局額外 +100 金幣'},
+  {id:'ghostSlayer',  name:'👻 幽靈剋星',  cost:600, desc:'主角對幽靈兵造成 2× 傷害'},
+  {id:'bossSlayer',   name:'👑 巨人殺手',  cost:700, desc:'主角對首領造成 2× 傷害'},
+  {id:'fortressGuard',name:'🏰 堡壘守護',  cost:500, desc:'堡壘最大 HP +30%'},
+  {id:'chainThunder', name:'⚡ 連鎖天雷',  cost:800, desc:'主角攻擊額外連鎖至 2 個附近敵人'},
+];
+function loadPlayerData(){
+  try{
+    const d=JSON.parse(localStorage.getItem(PLAYER_KEY)||'{}');
+    return {
+      xp:d.xp||0,
+      upgrades:{hp:d.upgrades?.hp||0,damage:d.upgrades?.damage||0,atkSpeed:d.upgrades?.atkSpeed||0,speed:d.upgrades?.speed||0},
+      skills:Array.isArray(d.skills)?d.skills:[]
+    };
+  }catch(e){return {xp:0,upgrades:{hp:0,damage:0,atkSpeed:0,speed:0},skills:[]};}
+}
+function savePlayerData(d){localStorage.setItem(PLAYER_KEY,JSON.stringify(d));}
+// 安靜地加XP（不打斷遊戲訊息）；返回新總量
+function addXPSilent(amount){
+  const d=loadPlayerData(); d.xp+=amount; savePlayerData(d); return d.xp;
+}
+// 購買升級（從選關介面呼叫）
+function buyUpgrade(key){
+  const d=loadPlayerData();
+  const def=UPGRADE_DEFS[key]; if(!def) return;
+  const lv=d.upgrades[key]||0;
+  if(lv>=def.maxLevel){alert('已達最高等級！');return;}
+  const cost=def.costs[lv];
+  if(d.xp<cost){alert(`經驗值不足！需要 ${cost} XP，目前 ${d.xp} XP`);return;}
+  d.xp-=cost; d.upgrades[key]=(lv+1); savePlayerData(d);
+  refreshXPPanel();
+}
+// 購買技能（從選關介面呼叫）
+function buySkill(id){
+  const d=loadPlayerData();
+  const def=SKILL_DEFS.find(s=>s.id===id); if(!def) return;
+  if(d.skills.includes(id)){alert('已解鎖！');return;}
+  if(d.xp<def.cost){alert(`經驗值不足！需要 ${def.cost} XP，目前 ${d.xp} XP`);return;}
+  d.xp-=def.cost; d.skills.push(id); savePlayerData(d);
+  refreshXPPanel();
+}
+// 刷新 XP 面板 UI（在 index.html 的 inline script 中定義）
+function refreshXPPanel(){
+  if(typeof _refreshXPPanelImpl==='function') _refreshXPPanelImpl();
+}
 const occupiedCells = new Set();
 const keys = {};
 
@@ -605,7 +661,9 @@ function showMessage(t,d=2000){ messageText=t; messageExpire=performance.now()+d
 function initGame(levelNum) {
   researchDone=new Set();           // 必須在 hero = new Hero() 之前清空
   towers=[]; enemies=[]; bullets=[]; friendlyUnits=[];
-  gold=levelNum===50?600:300; wave=0; gameOver=false;
+  const _pdat=loadPlayerData();
+  gold=(levelNum===50?600:300)+(_pdat.skills.includes('richStart')?100:0);
+  wave=0; gameOver=false;
   spawnQueue=[]; waveActive=false; waveComplete=false;
   nextWaveAt=0; nextWaveCountdown=0; towerIdCounter=0;
   messageText=''; selectedBuilding=null; upgradeButtonBounds=null; sellButtonBounds=null;
@@ -634,25 +692,39 @@ class Hero {
     this.lastAttack=0; this.dead=false; this.invincible=0;
     this.maxHp=260; this.hp=260;
     this.damage=40; this.attackRate=620; this.speed=3.3;
+    // 載入技能旗標
+    const _pd=loadPlayerData();
+    this._rebirthAvail=_pd.skills.includes('rebirth');
+    this._ghostSlayer=_pd.skills.includes('ghostSlayer');
+    this._bossSlayer=_pd.skills.includes('bossSlayer');
+    this._chainThunder=_pd.skills.includes('chainThunder');
     this.applyResearch();
   }
   applyResearch(){
     const wasAtFull=this.hp>=this.maxHp;
-    this.maxHp=Math.floor(260*(researchDone.has('heroHp')?1.25:1));
+    const upg=loadPlayerData().upgrades;
+    this.maxHp=Math.floor(260*(1+upg.hp*0.15)*(researchDone.has('heroHp')?1.25:1));
     this.hp=wasAtFull?this.maxHp:Math.min(this.hp,this.maxHp);
-    this.damage=Math.floor(40*(researchDone.has('heroDmg')?1.25:1));
-    this.attackRate=Math.floor(620*(researchDone.has('heroAtk')?0.8:1));
-    this.speed=3.3*(researchDone.has('heroSpd')?1.2:1);
+    this.damage=Math.floor(40*(1+upg.damage*0.15)*(researchDone.has('heroDmg')?1.25:1));
+    this.attackRate=Math.floor(620/(1+upg.atkSpeed*0.10)*(researchDone.has('heroAtk')?0.8:1));
+    this.speed=3.3*(1+upg.speed*0.10)*(researchDone.has('heroSpd')?1.2:1);
   }
   takeDamage(dmg, now){
     if(now<this.invincible) return;
     this.hp-=dmg;
     waveDmgTaken+=dmg;
     if(this.hp<=0){
-      this.hp=this.maxHp;
-      this.x=1*CELL_SIZE+CELL_SIZE/2; this.y=13*CELL_SIZE+CELL_SIZE/2;
-      this.invincible=now+3000;
-      showMessage('💀 主角陣亡！回到起點復活');
+      if(this._rebirthAvail){
+        this._rebirthAvail=false;
+        this.hp=this.maxHp;
+        this.invincible=now+5000;
+        showMessage('🔥 浴火重生！原地滿血復活！',3000);
+      } else {
+        this.hp=this.maxHp;
+        this.x=1*CELL_SIZE+CELL_SIZE/2; this.y=13*CELL_SIZE+CELL_SIZE/2;
+        this.invincible=now+3000;
+        showMessage('💀 主角陣亡！回到起點復活');
+      }
     }
   }
   update(now){
@@ -672,7 +744,20 @@ class Hero {
         const d=Math.sqrt((e.x-this.x)**2+(e.y-this.y)**2);
         if(d<minD){minD=d; target=e;}
       }
-      if(target){ this.lastAttack=now; SFX.heroShoot(); bullets.push(new Bullet(this.x,this.y,target,this.damage,'#00e5ff',7,false,0)); }
+      if(target){
+        this.lastAttack=now; SFX.heroShoot();
+        let dmg=this.damage;
+        if(this._ghostSlayer&&target.ghost) dmg=dmg*2;
+        if(this._bossSlayer&&ENEMY_TYPES[target.type]?.isBoss) dmg=dmg*2;
+        bullets.push(new Bullet(this.x,this.y,target,dmg,'#00e5ff',7,false,0));
+        if(this._chainThunder){
+          const chain=enemies.filter(e=>!e.dead&&e!==target)
+            .sort((a,b)=>((a.x-target.x)**2+(a.y-target.y)**2)-((b.x-target.x)**2+(b.y-target.y)**2))
+            .slice(0,2);
+          for(const ce of chain)
+            bullets.push(new Bullet(target.x,target.y,ce,Math.floor(dmg*0.6),'#f1c40f',9,false,0));
+        }
+      }
     }
   }
   draw(now){
@@ -976,7 +1061,9 @@ class Tower {
     this.y=row*CELL_SIZE+CELL_SIZE/2;
     const _def=TOWER_TYPES[type];
     // 堡壘 HP 定義在 levels 裡；其他塔從 def.hp 取
-    this.maxHp=_def.isFortress?_def.levels[0].hp:_def.hp;
+    let _baseHp=_def.isFortress?_def.levels[0].hp:_def.hp;
+    if(_def.isFortress&&loadPlayerData().skills.includes('fortressGuard')) _baseHp=Math.floor(_baseHp*1.3);
+    this.maxHp=_baseHp;
     this.hp=this.maxHp;
     this.dead=false; this.hitFlash=0;
     this.id = ++towerIdCounter;
@@ -1014,7 +1101,8 @@ class Tower {
     }
     else if(def.isLab){ /* no combat stats */ }
     else if(def.isFortress){
-      const newMax=s.hp;
+      let newMax=s.hp;
+      if(loadPlayerData().skills.includes('fortressGuard')) newMax=Math.floor(newMax*1.3);
       const ratio=this.maxHp>0?this.hp/this.maxHp:1;
       this.maxHp=newMax;
       this.hp=Math.min(Math.ceil(newMax*ratio),newMax);
@@ -1252,13 +1340,21 @@ function updateSpawn(now){
     waveActive=false;
     // 顯示波次結算
     const isBossWave=wave===10||wave===20;
-    waveSummary={kills:waveKills,gold:waveGoldEarned,dmg:Math.floor(waveDmgTaken),waveNum:wave,isBossWave};
+    // 計算並發放本波 XP
+    const waveXP=30+wave*4+(isBossWave?80:0);
+    addXPSilent(waveXP);
+    waveSummary={kills:waveKills,gold:waveGoldEarned,dmg:Math.floor(waveDmgTaken),waveNum:wave,isBossWave,xp:waveXP};
     waveSummaryExpire=performance.now()+4000;
     if(wave>=WAVES.length){
       waveComplete=true;
       SFX.victory(); SFX.stopBGM();
       saveCleared(currentLevel);
+      // 通關額外 XP
+      const clearXP=currentLevel===50?500:150;
+      addXPSilent(clearXP);
+      waveSummary.clearXP=clearXP;
       refreshLevelCards();
+      refreshXPPanel();
     }
   }
 }
@@ -1415,7 +1511,9 @@ function drawHUD(){
   // 波次結算面板
   if(waveSummary&&now<waveSummaryExpire&&!waveActive){
     const alpha=Math.min(1,(waveSummaryExpire-now)/600);
-    const pW=260,pH=waveSummary.isBossWave?130:110;
+    const pW=260;
+    let pH=waveSummary.isBossWave?148:128;
+    if(waveSummary.clearXP) pH+=22;
     const px=canvas.width/2-pW/2, py=TOP_OFFSET+8;
     ctx.save(); ctx.globalAlpha=alpha*0.96;
     ctx.fillStyle='rgba(5,15,40,0.95)';
@@ -1429,9 +1527,15 @@ function drawHUD(){
     ctx.fillText(`🗡️  擊殺敵人：${waveSummary.kills} 隻`, px+20, py+40);
     ctx.fillText(`💰  獲得金幣：+${waveSummary.gold}`, px+20, py+60);
     ctx.fillText(`🛡️  承受傷害：${waveSummary.dmg}`, px+20, py+80);
+    ctx.fillText(`✨  獲得經驗：+${waveSummary.xp} XP`, px+20, py+100);
+    ctx.fillStyle='#c8f';
     if(waveSummary.isBossWave){
       ctx.font='bold 12px sans-serif'; ctx.fillStyle='#ffa040'; ctx.textAlign='center';
-      ctx.fillText('首領已擊倒！豐厚獎勵到手', px+pW/2, py+108);
+      ctx.fillText('首領已擊倒！豐厚獎勵到手', px+pW/2, py+124);
+    }
+    if(waveSummary.clearXP){
+      ctx.font='bold 12px sans-serif'; ctx.fillStyle='#f1c40f'; ctx.textAlign='center';
+      ctx.fillText(`🏆 通關獎勵 +${waveSummary.clearXP} XP！`, px+pW/2, py+pH-14);
     }
     ctx.restore();
   }

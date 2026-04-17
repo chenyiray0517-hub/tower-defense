@@ -204,6 +204,162 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
+/* ── XP 升級面板 ── */
+#xp-panel {
+  width: 100%;
+  max-width: 1040px;
+  background: linear-gradient(145deg, #0d1b2a, #112240);
+  border: 1px solid #1e4080;
+  border-radius: 16px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+#xp-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+#xp-title {
+  font-size: 18px;
+  font-weight: bold;
+  white-space: nowrap;
+  color: #e0d0ff;
+}
+
+#xp-bar-wrap {
+  flex: 1;
+  height: 12px;
+  background: #1a1a3a;
+  border-radius: 6px;
+  overflow: hidden;
+  min-width: 80px;
+}
+
+#xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7c3aed, #c084fc);
+  border-radius: 6px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+#xp-amount {
+  font-size: 15px;
+  font-weight: bold;
+  color: #c084fc;
+  white-space: nowrap;
+}
+
+.xp-section-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #9ca3af;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #1e4080;
+  padding-bottom: 6px;
+}
+
+#upgrade-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+#skill-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  #upgrade-grid { grid-template-columns: repeat(2, 1fr); }
+  #skill-grid   { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 500px) {
+  #upgrade-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  #skill-grid   { grid-template-columns: 1fr; }
+  #xp-panel     { padding: 16px; }
+}
+
+.xp-upgrade-card,
+.xp-skill-card {
+  background: linear-gradient(145deg, #0f1e35, #162a4a);
+  border: 1px solid #1e4080;
+  border-radius: 10px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.xp-upgrade-card:hover,
+.xp-skill-card:hover {
+  border-color: #7c3aed;
+  box-shadow: 0 0 12px rgba(124,58,237,0.2);
+}
+
+.xp-card-maxed,
+.xp-card-owned {
+  border-color: rgba(46,204,113,0.4);
+  opacity: 0.75;
+}
+
+.xp-card-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: #e0d0ff;
+}
+
+.xp-card-desc {
+  font-size: 12px;
+  color: #8ca8d0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.xp-card-pips {
+  font-size: 13px;
+  color: #c084fc;
+  letter-spacing: 2px;
+}
+
+.xp-card-maxlabel {
+  font-size: 12px;
+  color: #2ecc71;
+  font-weight: bold;
+}
+
+.xp-buy-btn {
+  margin-top: 4px;
+  background: linear-gradient(135deg, #4c1d95, #7c3aed);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.xp-buy-btn:hover:not(.xp-buy-disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.xp-buy-disabled {
+  background: #1e2a3a;
+  color: #4a5568;
+  cursor: not-allowed;
+}
+
 /* ── 遊戲標題列 ── */
 #game-header {
   display: flex;
