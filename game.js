@@ -1371,19 +1371,21 @@ function drawHUD(){
     }
     ctx.restore();
   }
-  // 虛擬搖桿（永遠顯示，非啟動時半透明）
-  ctx.save();
-  ctx.globalAlpha = joystick.active ? 0.45 : 0.18;
-  ctx.beginPath();
-  ctx.arc(JOY_FIX_X, JOY_FIX_Y, joystick.baseR, 0, Math.PI*2);
-  ctx.fillStyle='#ffffff'; ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=2; ctx.stroke();
-  ctx.globalAlpha = joystick.active ? 0.85 : 0.28;
-  ctx.beginPath();
-  ctx.arc(joystick.knobX, joystick.knobY, joystick.knobR, 0, Math.PI*2);
-  ctx.fillStyle='#00e5ff'; ctx.fill();
-  ctx.globalAlpha=1;
-  ctx.restore();
+  // 虛擬搖桿（僅桌面在畫布上繪製；手機用 HTML 搖桿）
+  if(!isMobile()){
+    ctx.save();
+    ctx.globalAlpha = joystick.active ? 0.45 : 0.18;
+    ctx.beginPath();
+    ctx.arc(JOY_FIX_X, JOY_FIX_Y, joystick.baseR, 0, Math.PI*2);
+    ctx.fillStyle='#ffffff'; ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=2; ctx.stroke();
+    ctx.globalAlpha = joystick.active ? 0.85 : 0.28;
+    ctx.beginPath();
+    ctx.arc(joystick.knobX, joystick.knobY, joystick.knobR, 0, Math.PI*2);
+    ctx.fillStyle='#00e5ff'; ctx.fill();
+    ctx.globalAlpha=1;
+    ctx.restore();
+  }
 }
 
 // ── 手機面板輔助函數 ─────────────────────────────────────
@@ -1956,14 +1958,18 @@ canvas.addEventListener('touchstart', e=>{
   e.preventDefault();
   for(const t of e.changedTouches){
     const {x,y}=getCanvasPos(t);
-    const dxJ=x-JOY_FIX_X, dyJ=y-JOY_FIX_Y;
-    const distToJoy=Math.sqrt(dxJ*dxJ+dyJ*dyJ);
-    if(!joystick.active && distToJoy<=joystick.baseR*1.8){
-      // 觸碰搖桿區域 → 啟動搖桿
-      joystick.active=true; joystick.touchId=t.identifier;
-      joystick.knobX=x; joystick.knobY=y;
-      joystick.dx=0; joystick.dy=0;
-    } else if(buildTouchId===null){
+    if(!isMobile()){
+      // 桌面：在畫布上偵測搖桿
+      const dxJ=x-JOY_FIX_X, dyJ=y-JOY_FIX_Y;
+      const distToJoy=Math.sqrt(dxJ*dxJ+dyJ*dyJ);
+      if(!joystick.active && distToJoy<=joystick.baseR*1.8){
+        joystick.active=true; joystick.touchId=t.identifier;
+        joystick.knobX=x; joystick.knobY=y;
+        joystick.dx=0; joystick.dy=0;
+        continue;
+      }
+    }
+    if(buildTouchId===null){
       // 其他區域 → 追蹤建築點擊
       buildTouchId=t.identifier;
       buildTouchStartX=x; buildTouchStartY=y;
@@ -1975,7 +1981,7 @@ canvas.addEventListener('touchstart', e=>{
 canvas.addEventListener('touchmove', e=>{
   e.preventDefault();
   for(const t of e.changedTouches){
-    if(t.identifier===joystick.touchId){
+    if(!isMobile()&&t.identifier===joystick.touchId){
       const {x,y}=getCanvasPos(t);
       const ddx=x-JOY_FIX_X, ddy=y-JOY_FIX_Y;
       const dist=Math.sqrt(ddx*ddx+ddy*ddy);
@@ -1998,7 +2004,7 @@ canvas.addEventListener('touchmove', e=>{
 canvas.addEventListener('touchend', e=>{
   e.preventDefault();
   for(const t of e.changedTouches){
-    if(t.identifier===joystick.touchId){
+    if(!isMobile()&&t.identifier===joystick.touchId){
       joystick.active=false; joystick.touchId=null;
       joystick.knobX=JOY_FIX_X; joystick.knobY=JOY_FIX_Y;
       joystick.dx=0; joystick.dy=0;
@@ -2014,8 +2020,65 @@ canvas.addEventListener('touchend', e=>{
 },{passive:false});
 
 canvas.addEventListener('touchcancel', e=>{
-  joystick.active=false; joystick.touchId=null;
-  joystick.knobX=JOY_FIX_X; joystick.knobY=JOY_FIX_Y;
-  joystick.dx=0; joystick.dy=0;
+  if(!isMobile()){
+    joystick.active=false; joystick.touchId=null;
+    joystick.knobX=JOY_FIX_X; joystick.knobY=JOY_FIX_Y;
+    joystick.dx=0; joystick.dy=0;
+  }
   buildTouchId=null;
 },{passive:false});
+
+// ── HTML 搖桿觸控（手機，畫布下方）─────────────────────────
+(function(){
+  const joyBase=document.getElementById('joy-base');
+  const joyKnob=document.getElementById('joy-knob');
+  if(!joyBase) return;
+  const JOY_R=54; // joy-base 半徑 (108/2)
+  const KNOB_R=23; // joy-knob 半徑 (46/2)
+  const MAX_DISP=JOY_R-KNOB_R; // 31px
+  let touchId=null;
+
+  function getCenter(){
+    const r=joyBase.getBoundingClientRect();
+    return { x: r.left+r.width/2, y: r.top+r.height/2 };
+  }
+  function move(clientX, clientY){
+    const c=getCenter();
+    const ddx=clientX-c.x, ddy=clientY-c.y;
+    const dist=Math.sqrt(ddx*ddx+ddy*ddy);
+    const clamp=Math.min(dist,MAX_DISP);
+    const angle=Math.atan2(ddy,ddx);
+    const ox=Math.cos(angle)*clamp, oy=Math.sin(angle)*clamp;
+    joyKnob.style.transform=`translate(calc(-50% + ${ox}px), calc(-50% + ${oy}px))`;
+    joystick.dx=dist>5?Math.cos(angle)*Math.min(dist/MAX_DISP,1):0;
+    joystick.dy=dist>5?Math.sin(angle)*Math.min(dist/MAX_DISP,1):0;
+    joystick.active=true;
+  }
+  function reset(){
+    touchId=null;
+    joystick.active=false; joystick.dx=0; joystick.dy=0;
+    joyKnob.style.transform='translate(-50%, -50%)';
+  }
+
+  joyBase.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    if(touchId===null){
+      const t=e.changedTouches[0];
+      touchId=t.identifier;
+      move(t.clientX, t.clientY);
+    }
+  },{passive:false});
+  joyBase.addEventListener('touchmove', e=>{
+    e.preventDefault();
+    for(const t of e.changedTouches){
+      if(t.identifier===touchId){ move(t.clientX, t.clientY); break; }
+    }
+  },{passive:false});
+  joyBase.addEventListener('touchend', e=>{
+    e.preventDefault();
+    for(const t of e.changedTouches){
+      if(t.identifier===touchId){ reset(); break; }
+    }
+  },{passive:false});
+  joyBase.addEventListener('touchcancel', e=>{ reset(); },{passive:false});
+})();

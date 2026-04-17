@@ -379,25 +379,71 @@ h1 {
   .tower-btn small { font-size: 10px; }
 }
 
-/* ── 手機建築升級面板 ── */
+/* ── 手機底部區域（搖桿 + 升級面板）── */
+#mobile-bottom {
+  display: none; /* 桌面隱藏 */
+}
 #mobile-upgrade-panel {
   display: none; /* 非手機時永不顯示 */
 }
 
 @media (max-width: 768px) {
-  #mobile-upgrade-panel {
+  #mobile-bottom {
+    display: flex;
     width: 100%;
+    align-items: flex-start;
+    gap: 8px;
+    min-height: 128px;
+  }
+
+  /* 搖桿容器 */
+  #mobile-joy-area {
+    width: 128px;
+    height: 128px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #joy-base {
+    width: 108px;
+    height: 108px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.22);
+    position: relative;
+    touch-action: none;
+  }
+  #joy-knob {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(0,229,255,0.45);
+    border: 2px solid rgba(0,229,255,0.9);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(0,229,255,0.35);
+  }
+
+  /* 升級面板（右側，填滿剩餘寬度） */
+  #mobile-upgrade-panel {
+    flex: 1;
+    min-width: 0;
     background: rgba(8,18,48,0.97);
     border: 1.5px solid #00e5ff;
     border-radius: 10px;
     padding: 10px 12px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    max-height: 34vh;
-    flex-shrink: 0;
+    max-height: 128px;
     color: #eee;
     font-size: 13px;
-    /* 隱藏時用 visibility，避免影響佈局 */
   }
   #mobile-upgrade-panel.mp-active { display: block; }
 
