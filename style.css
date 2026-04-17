@@ -159,6 +159,51 @@ body {
   border-color: #2ecc71;
 }
 
+/* ── 第50關：特殊傳說關卡 ── */
+@keyframes legend-glow {
+  0%,100% { box-shadow: 0 0 18px rgba(255,180,0,0.5), 0 0 40px rgba(255,80,0,0.25); border-color: #f1c40f; }
+  33%      { box-shadow: 0 0 18px rgba(255,80,220,0.5), 0 0 40px rgba(180,0,255,0.25); border-color: #e040fb; }
+  66%      { box-shadow: 0 0 18px rgba(0,200,255,0.5), 0 0 40px rgba(0,100,255,0.25); border-color: #00e5ff; }
+}
+.level-card-special {
+  background: linear-gradient(145deg, #1a0a00, #2a1040, #001a30);
+  border: 2px solid #f1c40f;
+  animation: legend-glow 3s ease-in-out infinite;
+  grid-column: 1 / -1; /* 佔滿整行 */
+}
+.level-card-special:hover {
+  transform: translateY(-6px) scale(1.01);
+}
+.level-card-special:hover .level-start-btn-special {
+  background: linear-gradient(90deg, #f1c40f, #e040fb, #00e5ff);
+  color: #1a1a2e;
+}
+.level-badge-special {
+  font-size: 64px;
+  color: rgba(255,180,0,0.12);
+}
+.level-name-special {
+  font-size: 24px;
+  letter-spacing: 3px;
+  background: linear-gradient(90deg, #f1c40f, #e040fb, #00e5ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.diff-special {
+  background: linear-gradient(90deg, rgba(255,80,0,0.3), rgba(180,0,255,0.3));
+  color: #ff9800;
+  border: 1px solid rgba(255,80,0,0.5);
+}
+.level-start-btn-special {
+  background: linear-gradient(90deg, #3a1a00, #1a0040);
+  border: 1px solid #f1c40f;
+  color: #f1c40f;
+  font-size: 15px;
+  letter-spacing: 1px;
+  transition: background 0.3s, color 0.3s;
+}
+
 /* ── 遊戲標題列 ── */
 #game-header {
   display: flex;

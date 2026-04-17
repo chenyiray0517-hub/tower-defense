@@ -320,6 +320,70 @@ const LEVEL_WAVES = {
     [{type:'grunt',count:25,interval:590},{type:'runner',count:19,interval:400},{type:'tank',count:9,interval:1280},{type:'revenant',count:5,interval:1880},{type:'ghost',count:5,interval:980}],
     [{type:'grunt',count:28,interval:560},{type:'runner',count:23,interval:380},{type:'tank',count:11,interval:1220},{type:'revenant',count:6,interval:1720},{type:'ghost',count:6,interval:910}],
   ],
+  // ── L50：終極試煉（50波，boss 不斷增加）─────────────────
+  50: [
+    // 第1–5波：地獄起點
+    [{type:'grunt',count:20,interval:500},{type:'runner',count:15,interval:380},{type:'tank',count:5,interval:1400}],
+    [{type:'grunt',count:22,interval:480},{type:'runner',count:17,interval:360},{type:'tank',count:6,interval:1350},{type:'revenant',count:4,interval:1800}],
+    [{type:'grunt',count:24,interval:460},{type:'runner',count:18,interval:350},{type:'tank',count:7,interval:1300},{type:'ghost',count:5,interval:1000}],
+    [{type:'grunt',count:25,interval:450},{type:'runner',count:20,interval:340},{type:'tank',count:7,interval:1250},{type:'revenant',count:5,interval:1700},{type:'ghost',count:5,interval:950}],
+    [{type:'grunt',count:28,interval:430},{type:'runner',count:22,interval:330},{type:'tank',count:8,interval:1200},{type:'revenant',count:5,interval:1650},{type:'ghost',count:6,interval:900}],
+    // 第6–10波
+    [{type:'grunt',count:30,interval:420},{type:'runner',count:24,interval:320},{type:'tank',count:9,interval:1150},{type:'revenant',count:6,interval:1600},{type:'ghost',count:6,interval:880}],
+    [{type:'grunt',count:32,interval:400},{type:'runner',count:25,interval:310},{type:'tank',count:10,interval:1100},{type:'revenant',count:6,interval:1550},{type:'ghost',count:7,interval:860}],
+    [{type:'boss',count:1,interval:5000},{type:'grunt',count:30,interval:380},{type:'runner',count:22,interval:300},{type:'tank',count:8,interval:1050}],
+    [{type:'grunt',count:35,interval:380},{type:'runner',count:27,interval:300},{type:'tank',count:11,interval:1050},{type:'revenant',count:7,interval:1500},{type:'ghost',count:7,interval:840}],
+    [{type:'boss',count:1,interval:4500},{type:'grunt',count:33,interval:360},{type:'runner',count:25,interval:290},{type:'tank',count:10,interval:1000},{type:'revenant',count:7,interval:1450}],
+    // 第11–15波
+    [{type:'grunt',count:38,interval:360},{type:'runner',count:29,interval:280},{type:'tank',count:12,interval:1000},{type:'revenant',count:8,interval:1400},{type:'ghost',count:8,interval:820}],
+    [{type:'boss',count:2,interval:4000},{type:'grunt',count:35,interval:340},{type:'runner',count:27,interval:270},{type:'tank',count:10,interval:950}],
+    [{type:'grunt',count:40,interval:340},{type:'runner',count:31,interval:265},{type:'tank',count:13,interval:950},{type:'revenant',count:9,interval:1350},{type:'ghost',count:8,interval:800}],
+    [{type:'grunt',count:42,interval:330},{type:'runner',count:33,interval:260},{type:'tank',count:14,interval:900},{type:'revenant',count:9,interval:1300},{type:'ghost',count:9,interval:780}],
+    [{type:'boss',count:2,interval:3500},{type:'grunt',count:38,interval:320},{type:'runner',count:30,interval:250},{type:'tank',count:12,interval:900},{type:'ghost',count:8,interval:760}],
+    // 第16–20波
+    [{type:'grunt',count:45,interval:320},{type:'runner',count:35,interval:250},{type:'tank',count:15,interval:880},{type:'revenant',count:10,interval:1250},{type:'ghost',count:9,interval:760}],
+    [{type:'boss',count:2,interval:3200},{type:'grunt',count:40,interval:300},{type:'runner',count:32,interval:240},{type:'tank',count:13,interval:860},{type:'revenant',count:9,interval:1200}],
+    [{type:'grunt',count:48,interval:310},{type:'runner',count:37,interval:240},{type:'tank',count:16,interval:860},{type:'revenant',count:11,interval:1200},{type:'ghost',count:10,interval:740}],
+    [{type:'grunt',count:50,interval:300},{type:'runner',count:39,interval:235},{type:'tank',count:17,interval:840},{type:'revenant',count:11,interval:1150},{type:'ghost',count:10,interval:720}],
+    [{type:'boss',count:3,interval:3000},{type:'grunt',count:45,interval:290},{type:'runner',count:35,interval:230},{type:'tank',count:14,interval:820},{type:'ghost',count:10,interval:700}],
+    // 第21–25波
+    [{type:'grunt',count:52,interval:290},{type:'runner',count:40,interval:225},{type:'tank',count:18,interval:820},{type:'revenant',count:12,interval:1100},{type:'ghost',count:11,interval:700}],
+    [{type:'boss',count:3,interval:2800},{type:'grunt',count:48,interval:280},{type:'runner',count:38,interval:220},{type:'tank',count:16,interval:800},{type:'revenant',count:11,interval:1050}],
+    [{type:'grunt',count:55,interval:280},{type:'runner',count:42,interval:215},{type:'tank',count:19,interval:800},{type:'revenant',count:13,interval:1050},{type:'ghost',count:11,interval:680}],
+    [{type:'grunt',count:58,interval:270},{type:'runner',count:44,interval:210},{type:'tank',count:20,interval:780},{type:'revenant',count:13,interval:1000},{type:'ghost',count:12,interval:660}],
+    [{type:'boss',count:4,interval:2600},{type:'grunt',count:52,interval:260},{type:'runner',count:40,interval:200},{type:'tank',count:17,interval:760},{type:'ghost',count:11,interval:640}],
+    // 第26–30波
+    [{type:'grunt',count:60,interval:260},{type:'runner',count:46,interval:200},{type:'tank',count:21,interval:760},{type:'revenant',count:14,interval:1000},{type:'ghost',count:12,interval:640}],
+    [{type:'boss',count:4,interval:2400},{type:'grunt',count:55,interval:250},{type:'runner',count:43,interval:195},{type:'tank',count:18,interval:740},{type:'revenant',count:13,interval:950}],
+    [{type:'grunt',count:63,interval:250},{type:'runner',count:48,interval:190},{type:'tank',count:22,interval:740},{type:'revenant',count:15,interval:950},{type:'ghost',count:13,interval:620}],
+    [{type:'grunt',count:66,interval:240},{type:'runner',count:50,interval:185},{type:'tank',count:23,interval:720},{type:'revenant',count:15,interval:900},{type:'ghost',count:13,interval:600}],
+    [{type:'boss',count:5,interval:2200},{type:'grunt',count:60,interval:235},{type:'runner',count:46,interval:180},{type:'tank',count:20,interval:700},{type:'ghost',count:12,interval:580}],
+    // 第31–35波
+    [{type:'grunt',count:68,interval:235},{type:'runner',count:52,interval:180},{type:'tank',count:24,interval:700},{type:'revenant',count:16,interval:900},{type:'ghost',count:14,interval:580}],
+    [{type:'boss',count:5,interval:2000},{type:'grunt',count:63,interval:225},{type:'runner',count:49,interval:175},{type:'tank',count:22,interval:680},{type:'revenant',count:15,interval:860}],
+    [{type:'grunt',count:72,interval:225},{type:'runner',count:55,interval:175},{type:'tank',count:25,interval:680},{type:'revenant',count:17,interval:860},{type:'ghost',count:14,interval:560}],
+    [{type:'grunt',count:75,interval:215},{type:'runner',count:57,interval:170},{type:'tank',count:26,interval:660},{type:'revenant',count:17,interval:820},{type:'ghost',count:15,interval:540}],
+    [{type:'boss',count:6,interval:1800},{type:'grunt',count:68,interval:210},{type:'runner',count:53,interval:165},{type:'tank',count:23,interval:640},{type:'ghost',count:14,interval:520}],
+    // 第36–40波
+    [{type:'grunt',count:78,interval:210},{type:'runner',count:60,interval:165},{type:'tank',count:27,interval:640},{type:'revenant',count:18,interval:820},{type:'ghost',count:15,interval:520}],
+    [{type:'boss',count:6,interval:1700},{type:'grunt',count:72,interval:200},{type:'runner',count:56,interval:160},{type:'tank',count:25,interval:620},{type:'revenant',count:17,interval:780}],
+    [{type:'grunt',count:82,interval:200},{type:'runner',count:63,interval:160},{type:'tank',count:28,interval:620},{type:'revenant',count:19,interval:780},{type:'ghost',count:16,interval:500}],
+    [{type:'grunt',count:85,interval:190},{type:'runner',count:65,interval:155},{type:'tank',count:29,interval:600},{type:'revenant',count:19,interval:740},{type:'ghost',count:16,interval:480}],
+    [{type:'boss',count:7,interval:1600},{type:'grunt',count:78,interval:185},{type:'runner',count:60,interval:150},{type:'tank',count:26,interval:580},{type:'ghost',count:15,interval:460}],
+    // 第41–45波
+    [{type:'grunt',count:88,interval:185},{type:'runner',count:67,interval:150},{type:'tank',count:30,interval:580},{type:'revenant',count:20,interval:740},{type:'ghost',count:17,interval:460}],
+    [{type:'boss',count:8,interval:1500},{type:'grunt',count:82,interval:180},{type:'runner',count:63,interval:145},{type:'tank',count:28,interval:560},{type:'revenant',count:19,interval:700}],
+    [{type:'grunt',count:92,interval:180},{type:'runner',count:70,interval:145},{type:'tank',count:32,interval:560},{type:'revenant',count:21,interval:700},{type:'ghost',count:17,interval:440}],
+    [{type:'grunt',count:95,interval:170},{type:'runner',count:72,interval:140},{type:'tank',count:33,interval:540},{type:'revenant',count:21,interval:660},{type:'ghost',count:18,interval:420}],
+    [{type:'boss',count:9,interval:1400},{type:'grunt',count:88,interval:165},{type:'runner',count:68,interval:135},{type:'tank',count:30,interval:520},{type:'ghost',count:17,interval:400}],
+    // 第46–50波：終末審判
+    [{type:'grunt',count:100,interval:160},{type:'runner',count:75,interval:135},{type:'tank',count:35,interval:520},{type:'revenant',count:23,interval:660},{type:'ghost',count:19,interval:400}],
+    [{type:'boss',count:10,interval:1300},{type:'grunt',count:92,interval:155},{type:'runner',count:72,interval:130},{type:'tank',count:33,interval:500},{type:'revenant',count:22,interval:620}],
+    [{type:'grunt',count:105,interval:155},{type:'runner',count:80,interval:130},{type:'tank',count:37,interval:500},{type:'revenant',count:24,interval:620},{type:'ghost',count:20,interval:380}],
+    [{type:'grunt',count:110,interval:150},{type:'runner',count:84,interval:125},{type:'tank',count:39,interval:480},{type:'revenant',count:25,interval:580},{type:'ghost',count:20,interval:360}],
+    // 第50波：萬眾來朝
+    [{type:'boss',count:15,interval:1200},{type:'grunt',count:120,interval:140},{type:'runner',count:90,interval:120},{type:'tank',count:45,interval:460},{type:'revenant',count:28,interval:540},{type:'ghost',count:22,interval:340}],
+  ],
   // ── L8：等同原 L4（最高難度） ─────────────────────────
   8: [
     [{type:'grunt',count:8,interval:1000},{type:'runner',count:5,interval:750}],
@@ -541,7 +605,7 @@ function showMessage(t,d=2000){ messageText=t; messageExpire=performance.now()+d
 function initGame(levelNum) {
   researchDone=new Set();           // 必須在 hero = new Hero() 之前清空
   towers=[]; enemies=[]; bullets=[]; friendlyUnits=[];
-  gold=300; wave=0; gameOver=false;
+  gold=levelNum===50?600:300; wave=0; gameOver=false;
   spawnQueue=[]; waveActive=false; waveComplete=false;
   nextWaveAt=0; nextWaveCountdown=0; towerIdCounter=0;
   messageText=''; selectedBuilding=null; upgradeButtonBounds=null; sellButtonBounds=null;
