@@ -546,6 +546,8 @@ function initGame(levelNum) {
   nextWaveAt=0; nextWaveCountdown=0; towerIdCounter=0;
   messageText=''; selectedBuilding=null; upgradeButtonBounds=null; sellButtonBounds=null;
   trainUnitButtonBounds=[]; researchButtonBounds=[];
+  const _mp=document.getElementById('mobile-upgrade-panel');
+  if(_mp) _mp.classList.remove('mp-active');
   waveKills=0; waveGoldEarned=0; waveDmgTaken=0; waveSummary=null; waveSummaryExpire=0;
   currentLevel=levelNum;
   occupiedCells.clear();
@@ -1384,8 +1386,136 @@ function drawHUD(){
   ctx.restore();
 }
 
+// ── 手機面板輔助函數 ─────────────────────────────────────
+function isMobile(){ return window.innerWidth<=768; }
+
+function updateMobilePanel(){
+  const panel=document.getElementById('mobile-upgrade-panel');
+  if(!panel) return;
+  if(!isMobile()||!selectedBuilding){
+    panel.classList.remove('mp-active');
+    return;
+  }
+  panel.classList.add('mp-active');
+  const t=selectedBuilding, def=TOWER_TYPES[t.type];
+  const now=performance.now();
+  const stats=def.levels[t.level-1], upCost=t.upgradeCost;
+  const inRange=isInBuildRange(t.row,t.col);
+  const canUp=upCost&&gold>=upCost&&inRange;
+  const stars='★'.repeat(t.level)+'☆'.repeat(3-t.level);
+  const starsClass=t.level===3?'mp-stars-max':t.level===2?'mp-stars-2':'';
+
+  let html=`<div class="mp-header">
+    <span class="mp-name">${def.emoji} ${def.name}</span>
+    <span class="mp-stars ${starsClass}">${stars}</span>
+    <button class="mp-close" onclick="selectedBuilding=null">✕</button>
+  </div><div class="mp-stats">`;
+
+  if(def.isEconomic)    html+=`<span>💰 每${stats.tickInterval/1000}s 產出 ${stats.goldPerTick}金</span>`;
+  else if(def.isMarket) html+=`<span>🏷️ 每擊殺 +${stats.bonusPerKill}金</span>`;
+  else if(def.isChain)  html+=`<span>⚡${stats.damage}  📡${(stats.range/CELL_SIZE).toFixed(1)}  🔗${stats.chainCount}目標  ⏱${(stats.fireRate/1000).toFixed(1)}s</span>`;
+  else if(def.isFortress){
+    html+=`<span>❤️ ${Math.ceil(t.hp)} / ${t.maxHp}</span>`;
+    if(t.level>=2) html+=`<span>🧊 緩速${stats.slowRange}格  ⚕️ 再生+${stats.regenHp}HP/${stats.regenInterval/1000}s</span>`;
+    if(t.level>=3) html+=`<span>⚔️ 反擊${stats.counterDmg}傷害/${stats.counterRate/1000}s</span>`;
+  }
+  else html+=`<span>⚔️${stats.damage}  📡${(stats.range/CELL_SIZE).toFixed(1)}  ⏱${(stats.fireRate/1000).toFixed(1)}s</span>`;
+  html+='</div>';
+
+  if(def.isTraining){
+    const available=['infantry'];
+    if(researchDone.has('cavalry'))  available.push('cavalry');
+    if(researchDone.has('paladin'))  available.push('paladin');
+    const myUnits=friendlyUnits.filter(u=>u.source===t&&!u.dead).length;
+    const speedMult=researchDone.has('trainSpeed')?0.65:1;
+    const effInterval=t.trainInterval*speedMult;
+    const elapsed=now-t.lastTick, remain=Math.max(0,effInterval-elapsed);
+    const pct=Math.min(1,elapsed/effInterval)*100;
+    const uDef=FRIENDLY_UNIT_TYPES[t.trainUnitType||'infantry'];
+    html+=`<div class="mp-train-status">${uDef.emoji}${uDef.name}  👥${myUnits}/${t.maxUnits}  ⏱${remain>0?Math.ceil(remain/1000)+'s':'就緒'}</div>`;
+    html+=`<div class="mp-progress-bar"><div class="mp-progress-fill" style="width:${pct}%"></div></div>`;
+    html+='<div class="mp-unit-btns">';
+    for(const ut of available){
+      const uD=FRIENDLY_UNIT_TYPES[ut];
+      const sel=(t.trainUnitType||'infantry')===ut;
+      html+=`<button class="mp-unit-btn${sel?' mp-unit-btn-sel':''}" onclick="mobileSelectUnit('${ut}')">${uD.emoji} ${uD.name}  HP:${uD.hp}  ATK:${uD.damage}</button>`;
+    }
+    html+='</div>';
+  }
+
+  if(def.isLab){
+    html+='<div class="mp-research-list">';
+    let heroHeaderDrawn=false;
+    for(const item of RESEARCH_ITEMS){
+      if(item.isHero&&!heroHeaderDrawn){
+        html+='<div class="mp-research-header">── 🧙 主角升級 ──</div>';
+        heroHeaderDrawn=true;
+      }
+      const done=researchDone.has(item.id);
+      const locked=item.req&&!researchDone.has(item.req);
+      const canRes=!done&&!locked&&gold>=item.cost&&inRange;
+      const cls=done?'mp-research-done':locked?'mp-research-locked':canRes?'mp-research-can':'mp-research-poor';
+      const btnText=done?'✅ 已研發':locked?'🔒 鎖定':`${item.cost}💰`;
+      html+=`<div class="mp-research-item ${cls}"><span>🔬 ${item.name} — ${item.desc}</span>
+        <button ${(done||locked||!inRange)?'disabled':''} onclick="mobileResearch('${item.id}')">${btnText}</button></div>`;
+    }
+    html+='</div>';
+  }
+
+  if(upCost&&!def.isTraining&&!def.isLab){
+    const next=def.levels[t.level];
+    let preview='';
+    if(def.isEconomic)    preview=`→Lv${t.level+1}: 每${next.tickInterval/1000}s +${next.goldPerTick}金`;
+    else if(def.isMarket) preview=`→Lv${t.level+1}: 每擊殺 +${next.bonusPerKill}金`;
+    else if(def.isChain)  preview=`→Lv${t.level+1}: ⚡${next.damage} 🔗${next.chainCount}目標`;
+    else if(def.isFortress) preview=`→Lv${t.level+1}: ❤️HP ${next.hp}${next.slowRange?` 🧊緩速${next.slowRange}格`:''}${next.counterDmg?` ⚔️反擊${next.counterDmg}`:''}`;
+    else preview=`→Lv${t.level+1}: ⚔️${next.damage} 📡${(next.range/CELL_SIZE).toFixed(1)} ⏱${(next.fireRate/1000).toFixed(1)}s`;
+    if(preview) html+=`<div class="mp-next">${preview}</div>`;
+  }
+
+  html+='<div class="mp-btns">';
+  if(upCost){
+    const note=!inRange?'(需靠近)':gold<upCost?'(金幣不足)':'';
+    html+=`<button class="mp-btn-upgrade${canUp?'':' mp-btn-disabled'}" ${canUp?'onclick="mobileUpgrade()"':'disabled'}>升級 Lv${t.level+1}  ${upCost}💰${note?' '+note:''}</button>`;
+  } else if(!def.isLab){
+    html+=`<span class="mp-maxlevel">🏆 已達最高等級</span>`;
+  }
+  if(!def.isFortress&&inRange){
+    const sv=getSellValue(t);
+    html+=`<button class="mp-btn-sell" onclick="mobileSell()">🗑️ 出售  退款 ${sv}💰</button>`;
+  }
+  html+='</div>';
+  const prev=panel.scrollTop;
+  panel.innerHTML=html;
+  panel.scrollTop=prev;
+}
+
+function mobileUpgrade(){
+  if(!selectedBuilding) return;
+  if(selectedBuilding.tryUpgrade()) showMessage('✅ 升級成功！');
+}
+function mobileSell(){
+  if(!selectedBuilding) return;
+  const sv=getSellValue(selectedBuilding);
+  selectedBuilding.destroy();
+  gold+=sv;
+  showMessage(`💰 出售成功，退款 ${sv} 金幣`);
+  selectedBuilding=null;
+}
+function mobileSelectUnit(unitType){
+  if(selectedBuilding) selectedBuilding.trainUnitType=unitType;
+}
+function mobileResearch(id){
+  const item=RESEARCH_ITEMS.find(r=>r.id===id);
+  if(!item||researchDone.has(id)||gold<item.cost) return;
+  researchDone.add(id); gold-=item.cost;
+  showMessage(`🔬 研發完成：${item.name}`);
+  if(hero) hero.applyResearch();
+}
+
 function drawUpgradePanel(){
   upgradeButtonBounds=null; sellButtonBounds=null; trainUnitButtonBounds=[]; researchButtonBounds=[];
+  if(isMobile()){ updateMobilePanel(); return; }
   if(!selectedBuilding) return;
   const t=selectedBuilding, def=TOWER_TYPES[t.type];
   const now=performance.now();
