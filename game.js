@@ -594,6 +594,10 @@ const SKILL_DEFS=[
   {id:'fortressGuard',name:'🏰 堡壘守護',  cost:500, desc:'堡壘最大 HP +30%'},
   {id:'chainThunder', name:'⚡ 連鎖天雷',  cost:800, desc:'主角攻擊額外連鎖至 2 個附近敵人'},
 ];
+// 確保跨 script 可存取
+window.UPGRADE_DEFS = UPGRADE_DEFS;
+window.SKILL_DEFS   = SKILL_DEFS;
+
 function loadPlayerData(){
   try{
     const d=JSON.parse(localStorage.getItem(PLAYER_KEY)||'{}');
