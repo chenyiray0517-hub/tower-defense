@@ -529,8 +529,10 @@ h1 {
   color: #ccc;
 }
 
+.panel-sep { color: #555; }
 #hero-info {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
   font-size: 12px;

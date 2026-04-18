@@ -560,6 +560,7 @@ const BUILD_RANGE = 3 * CELL_SIZE;
 function getKillBonus(){
   let b=0;
   for(const t of towers) if(TOWER_TYPES[t.type].isMarket) b+=t.bonusPerKill;
+  if(loadPlayerData().skills.includes('goldFever')) b+=3;
   return b;
 }
 
@@ -574,6 +575,14 @@ function getSellValue(tower){
 let towers=[], enemies=[], bullets=[];
 let gold=300, wave=0, gameOver=false, WAVES=[], hero=null;
 let selectedTowerType='archer', selectedBuilding=null;
+// ── 士兵指揮系統 ──────────────────────────────────────────
+let selectedUnits=[];          // 當前選取的友方士兵陣列
+let dragSelBox=null;           // {sx,sy,ex,ey} 框選框（畫布座標）
+let dragSelActive=false;       // 正在框選中
+let dragSelDone=false;         // 框選剛完成，攔截下一次 click
+let mdDown=false,mdX=0,mdY=0; // mousedown 起始點
+let longPressTimer=null;       // 觸控長按計時器
+let longPressPos={x:0,y:0};   // 長按位置
 let upgradeButtonBounds=null, sellButtonBounds=null, trainUnitButtonBounds=[], researchButtonBounds=[];
 let hoverCol=-1, hoverRow=-1, animFrameId=null, currentLevel=1;
 // 波次結算追蹤
@@ -600,6 +609,14 @@ const SKILL_DEFS=[
   {id:'bossSlayer',   name:'👑 巨人殺手',  cost:700, desc:'主角對首領造成 2× 傷害'},
   {id:'fortressGuard',name:'🏰 堡壘守護',  cost:500, desc:'堡壘最大 HP +30%'},
   {id:'chainThunder', name:'⚡ 連鎖天雷',  cost:800, desc:'主角攻擊額外連鎖至 2 個附近敵人'},
+  {id:'berserker',    name:'💢 狂戰士',    cost:600, desc:'主角 HP 低於 30% 時，攻擊力 +100%'},
+  {id:'poisonBlade',  name:'☠️ 毒刃',      cost:700, desc:'主角攻擊使敵人中毒（每 0.5s 造成 8 傷害，持續 3 秒）'},
+  {id:'areaBlast',    name:'💥 爆裂衝擊',  cost:900, desc:'主角攻擊造成 0.9 格半徑爆炸，對範圍內所有敵人造成 50% 傷害'},
+  {id:'goldFever',    name:'🤑 黃金狂熱',  cost:450, desc:'每次擊殺額外獲得 +3 金幣（疊加市場收益）'},
+  {id:'towerFortify', name:'🛡️ 建築強化',  cost:600, desc:'所有防禦塔（非堡壘）最大 HP +25%'},
+  {id:'eliteArmy',    name:'⚔️ 精銳部隊',  cost:700, desc:'訓練場生產的友方士兵 HP 與攻擊力各 +30%'},
+  {id:'lastStand',    name:'🔱 困獸之鬥',  cost:800, desc:'堡壘 HP 低於 25% 時，主角攻擊速度 +60%'},
+  {id:'multiShot',    name:'🎯 三連矢',    cost:1000, desc:'主角每次攻擊同時對最近的 3 個不同目標發射'},
 ];
 // 確保跨 script 可存取
 window.UPGRADE_DEFS = UPGRADE_DEFS;
@@ -689,7 +706,7 @@ function showMessage(t,d=2000){ messageText=t; messageExpire=performance.now()+d
 // ── 初始化 ────────────────────────────────────────────────
 function initGame(levelNum) {
   researchDone=new Set();           // 必須在 hero = new Hero() 之前清空
-  towers=[]; enemies=[]; bullets=[]; friendlyUnits=[];
+  towers=[]; enemies=[]; bullets=[]; friendlyUnits=[]; selectedUnits=[];
   const _pdat=loadPlayerData();
   gold=(levelNum===50?600:300)+(_pdat.skills.includes('richStart')?100:0);
   wave=0; gameOver=false;
@@ -727,6 +744,11 @@ class Hero {
     this._ghostSlayer=_pd.skills.includes('ghostSlayer');
     this._bossSlayer=_pd.skills.includes('bossSlayer');
     this._chainThunder=_pd.skills.includes('chainThunder');
+    this._berserker=_pd.skills.includes('berserker');
+    this._poisonBlade=_pd.skills.includes('poisonBlade');
+    this._areaBlast=_pd.skills.includes('areaBlast');
+    this._lastStand=_pd.skills.includes('lastStand');
+    this._multiShot=_pd.skills.includes('multiShot');
     this.applyResearch();
   }
   applyResearch(){
@@ -766,25 +788,45 @@ class Hero {
     if(joystick.active){ nx+=joystick.dx*this.speed; ny+=joystick.dy*this.speed; }
     this.x=Math.max(this.size,Math.min(COLS*CELL_SIZE-this.size,nx));
     this.y=Math.max(this.size,Math.min(ROWS*CELL_SIZE-this.size,ny));
-    if(now-this.lastAttack>=this.attackRate){
-      let target=null, minD=this.range;
-      for(const e of enemies){
-        if(e.dead) continue;
-        const d=Math.sqrt((e.x-this.x)**2+(e.y-this.y)**2);
-        if(d<minD){minD=d; target=e;}
-      }
-      if(target){
+    // 困獸之鬥：堡壘HP<25%時攻速+60%
+    let effAttackRate=this.attackRate;
+    if(this._lastStand){
+      const fort=towers.find(t=>TOWER_TYPES[t.type].isFortress);
+      if(fort&&fort.hp/fort.maxHp<0.25) effAttackRate=Math.floor(effAttackRate*0.4);
+    }
+    if(now-this.lastAttack>=effAttackRate){
+      // 三連矢：蒐集最近3個敵人；否則只取1個
+      const shootCount=this._multiShot?3:1;
+      const candidates=enemies.filter(e=>!e.dead)
+        .map(e=>({e,d:Math.sqrt((e.x-this.x)**2+(e.y-this.y)**2)}))
+        .filter(o=>o.d<this.range)
+        .sort((a,b)=>a.d-b.d)
+        .slice(0,shootCount)
+        .map(o=>o.e);
+      if(candidates.length>0){
         this.lastAttack=now; SFX.heroShoot();
-        let dmg=this.damage;
-        if(this._ghostSlayer&&target.ghost) dmg=dmg*2;
-        if(this._bossSlayer&&ENEMY_TYPES[target.type]?.isBoss) dmg=dmg*2;
-        bullets.push(new Bullet(this.x,this.y,target,dmg,'#00e5ff',7,false,0));
-        if(this._chainThunder){
-          const chain=enemies.filter(e=>!e.dead&&e!==target)
+        for(const target of candidates){
+          let dmg=this.damage;
+          // 狂戰士：HP<30%時傷害翻倍
+          if(this._berserker&&this.hp/this.maxHp<0.3) dmg=dmg*2;
+          if(this._ghostSlayer&&target.ghost) dmg=dmg*2;
+          if(this._bossSlayer&&ENEMY_TYPES[target.type]?.isBoss) dmg=dmg*2;
+          // 爆裂衝擊：主角子彈有0.9格範圍
+          const splashR=this._areaBlast?CELL_SIZE*0.9:0;
+          const b=new Bullet(this.x,this.y,target,dmg,'#00e5ff',7,this._areaBlast,splashR);
+          if(this._poisonBlade) b.poisonHero=true;
+          bullets.push(b);
+        }
+        // 連鎖天雷：從主目標彈跳（只在第一個目標觸發）
+        if(this._chainThunder&&candidates.length>0){
+          const target=candidates[0];
+          const chain=enemies.filter(e=>!e.dead&&!candidates.includes(e))
             .sort((a,b)=>((a.x-target.x)**2+(a.y-target.y)**2)-((b.x-target.x)**2+(b.y-target.y)**2))
             .slice(0,2);
+          let chainDmg=this.damage;
+          if(this._berserker&&this.hp/this.maxHp<0.3) chainDmg=chainDmg*2;
           for(const ce of chain)
-            bullets.push(new Bullet(target.x,target.y,ce,Math.floor(dmg*0.6),'#f1c40f',9,false,0));
+            bullets.push(new Bullet(target.x,target.y,ce,Math.floor(chainDmg*0.6),'#f1c40f',9,false,0));
         }
       }
     }
@@ -828,6 +870,7 @@ class Enemy {
     this.attackDmg=def.attackDmg; this.attackRate=def.attackRate; this.attackRange=def.attackRange;
     this.lastAttack=0; this.slowUntil=0; this.fortSlowUntil=0; this.fortSlowMult=1;
     this.revived=false; this.reviveFlash=0; this.hitFlash=0;
+    this.poisonUntil=0; this.poisonDmg=0; this.lastPoisonTick=0;
     this.ghost=def.isGhost||false;
     this.wpIndex=0;
     this.spawnPoint=spawnPoint||PATH_START;
@@ -867,6 +910,14 @@ class Enemy {
   }
   update(now){
     if(this.dead) return;
+
+    // ── 毒刃持續傷害 ──
+    if(now<this.poisonUntil&&now-this.lastPoisonTick>=500){
+      this.lastPoisonTick=now;
+      this.hp-=this.poisonDmg;
+      this.hitFlash=now+200;
+      if(this.hp<=0){this.tryKill(getKillBonus());return;}
+    }
 
     // ── 已抵達堡壘格子：直接攻打 ──
     if(this.reached){
@@ -1004,6 +1055,12 @@ class Enemy {
       ctx.beginPath(); ctx.arc(sx,sy,r+4,0,Math.PI*2);
       ctx.strokeStyle='rgba(100,220,255,0.5)'; ctx.lineWidth=2; ctx.stroke();
     }
+    // 中毒光暈（毒刃）
+    if(now<this.poisonUntil){
+      const poisonPulse=0.4+0.3*Math.sin(now*0.01);
+      ctx.beginPath(); ctx.arc(sx,sy,r+5,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(180,79,232,${poisonPulse})`; ctx.lineWidth=2; ctx.stroke();
+    }
 
     // HP 條
     const bw=r*3,bh=5,bx=sx-bw/2,by=sy-r-9;
@@ -1023,8 +1080,9 @@ class FriendlyUnit {
     const def=FRIENDLY_UNIT_TYPES[type];
     this.type=type; this.source=source;
     this.x=x; this.y=y;
-    const hpM=researchDone.has('hpBoost')?1.6:1;
-    const dmM=researchDone.has('dmgBoost')?1.6:1;
+    const _eliteM=loadPlayerData().skills.includes('eliteArmy')?1.3:1;
+    const hpM=(researchDone.has('hpBoost')?1.6:1)*_eliteM;
+    const dmM=(researchDone.has('dmgBoost')?1.6:1)*_eliteM;
     this.maxHp=Math.floor(def.hp*hpM); this.hp=this.maxHp;
     this.speed=def.speed;
     this.damage=Math.floor(def.damage*dmM);
@@ -1033,9 +1091,38 @@ class FriendlyUnit {
     this.size=def.size;
     this.color=def.color;
     this.lastAttack=0; this.dead=false; this.hitFlash=0;
+    this.moveTarget=null; // {x,y} 世界座標，玩家下達的移動目的地
   }
   update(now){
     if(this.dead) return;
+
+    if(this.moveTarget){
+      // ── 指揮移動模式 ──
+      const tdx=this.moveTarget.x-this.x, tdy=this.moveTarget.y-this.y;
+      const tDist=Math.sqrt(tdx*tdx+tdy*tdy);
+      if(tDist<this.speed*2){
+        this.moveTarget=null; // 抵達目的地，恢復 AI
+      } else {
+        this.x+=tdx/tDist*this.speed;
+        this.y+=tdy/tDist*this.speed;
+        this.x=Math.max(this.size,Math.min(COLS*CELL_SIZE-this.size,this.x));
+        this.y=Math.max(this.size,Math.min(ROWS*CELL_SIZE-this.size,this.y));
+        // 移動途中若遇到敵人則順手攻擊
+        for(const e of enemies){
+          if(e.dead) continue;
+          const d=Math.sqrt((e.x-this.x)**2+(e.y-this.y)**2);
+          if(d<=this.range&&now-this.lastAttack>=this.attackRate){
+            this.lastAttack=now;
+            e.hp-=this.damage; e.hitFlash=now+220;
+            if(e.hp<=0) e.tryKill(getKillBonus());
+            break;
+          }
+        }
+      }
+      return;
+    }
+
+    // ── 自動 AI 模式 ──
     let target=null, minD=Infinity;
     for(const e of enemies){
       if(e.dead) continue;
@@ -1062,6 +1149,13 @@ class FriendlyUnit {
     if(this.dead) return;
     const {x:sx,y:sy}=worldToScreen(this.x,this.y);
     const r=this.size;
+    const isSel=selectedUnits.includes(this);
+    // 選取光環（綠色脈衝）
+    if(isSel){
+      const pulse=0.7+0.3*Math.sin(now*0.006);
+      ctx.beginPath(); ctx.arc(sx,sy,r+7,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(0,230,118,${pulse})`; ctx.lineWidth=2.5; ctx.stroke();
+    }
     const hit=now<this.hitFlash;
     if(hit){
       ctx.beginPath(); ctx.arc(sx,sy,r+3,0,Math.PI*2);
@@ -1069,7 +1163,7 @@ class FriendlyUnit {
     }
     ctx.beginPath(); ctx.arc(sx,sy,r,0,Math.PI*2);
     ctx.fillStyle=hit?'#ffcccc':this.color; ctx.fill();
-    ctx.strokeStyle=hit?'#ff4444':'rgba(255,255,255,0.8)'; ctx.lineWidth=2; ctx.stroke();
+    ctx.strokeStyle=isSel?'#00e676':hit?'#ff4444':'rgba(255,255,255,0.8)'; ctx.lineWidth=2; ctx.stroke();
     ctx.font=`${r+2}px serif`;
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText(FRIENDLY_UNIT_TYPES[this.type].emoji,sx,sy);
@@ -1079,6 +1173,15 @@ class FriendlyUnit {
     const ratio=Math.max(0,this.hp/this.maxHp);
     ctx.fillStyle=ratio>0.5?'#4fc3f7':ratio>0.25?'#f39c12':'#e74c3c';
     ctx.fillRect(bx,by,bw*ratio,bh);
+    // 移動目的地連線
+    if(isSel&&this.moveTarget){
+      const {x:tx,y:ty}=worldToScreen(this.moveTarget.x,this.moveTarget.y);
+      ctx.save();
+      ctx.strokeStyle='rgba(0,230,118,0.5)'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+      ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(tx,ty); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
   }
 }
 
@@ -1092,7 +1195,9 @@ class Tower {
     const _def=TOWER_TYPES[type];
     // 堡壘 HP 定義在 levels 裡；其他塔從 def.hp 取
     let _baseHp=_def.isFortress?_def.levels[0].hp:_def.hp;
-    if(_def.isFortress&&loadPlayerData().skills.includes('fortressGuard')) _baseHp=Math.floor(_baseHp*1.3);
+    const _skills=loadPlayerData().skills;
+    if(_def.isFortress&&_skills.includes('fortressGuard')) _baseHp=Math.floor(_baseHp*1.3);
+    if(!_def.isFortress&&_skills.includes('towerFortify')) _baseHp=Math.floor(_baseHp*1.25);
     this.maxHp=_baseHp;
     this.hp=this.maxHp;
     this.dead=false; this.hitFlash=0;
@@ -1308,6 +1413,12 @@ class Bullet {
       e.hp-=this.damage;
       e.hitFlash=now+220; // 受傷閃光
       if(this.slowEff) e.slowUntil=now+this.slowEff.duration;
+      // 毒刃：附加中毒狀態
+      if(this.poisonHero&&!e.ghost){
+        e.poisonUntil=now+3000;
+        e.poisonDmg=8;
+        e.lastPoisonTick=now;
+      }
       if(e.hp<=0) e.tryKill(getKillBonus());
     };
     if(this.splash){
@@ -1323,10 +1434,10 @@ class Bullet {
   draw(){
     if(this.done) return;
     const {x:sx,y:sy}=worldToScreen(this.x,this.y);
-    const r=this.slowEff?5:4;
+    const r=this.slowEff?5:this.poisonHero?5:4;
     ctx.beginPath(); ctx.arc(sx,sy,r,0,Math.PI*2);
-    ctx.fillStyle=this.color; ctx.fill();
-    if(this.slowEff){
+    ctx.fillStyle=this.poisonHero?'#b44fe8':this.color; ctx.fill();
+    if(this.slowEff||this.poisonHero){
       ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=1; ctx.stroke();
     }
   }
@@ -1386,6 +1497,8 @@ function updateSpawn(now){
     addXPSilent(waveXP);
     waveSummary={kills:waveKills,gold:waveGoldEarned,dmg:Math.floor(waveDmgTaken),waveNum:wave,isBossWave,xp:waveXP};
     waveSummaryExpire=performance.now()+4000;
+    // 特殊關卡（50）：波次結束後重設為 30 秒整，確保玩家有充裕準備時間
+    if(currentLevel===50&&wave<WAVES.length) nextWaveAt=performance.now()+30000;
     if(wave>=WAVES.length){
       waveComplete=true;
       SFX.victory(); SFX.stopBGM();
@@ -2014,6 +2127,7 @@ function gameLoop(now){
   if(hero) hero.update(now);
   for(const u of friendlyUnits) u.update(now);
   friendlyUnits=friendlyUnits.filter(u=>!u.dead);
+  selectedUnits=selectedUnits.filter(u=>!u.dead&&friendlyUnits.includes(u));
   // 繪製實體（深度排序）
   const ents=[...enemies,...friendlyUnits,hero].filter(Boolean).filter(e=>!e.dead);
   ents.sort((a,b)=>a.y-b.y);
@@ -2021,8 +2135,56 @@ function gameLoop(now){
   // 子彈
   bullets=bullets.filter(b=>!b.done);
   for(const b of bullets){b.update();b.draw();}
+  // ── 士兵指揮覆蓋層 ──
+  drawUnitCommandOverlay(now);
   drawHUD();
   animFrameId=requestAnimationFrame(gameLoop);
+}
+
+// ── 士兵指揮覆蓋層 ──────────────────────────────────────────
+function drawUnitCommandOverlay(now){
+  // 各選取士兵的目的地 ✕ 標記
+  for(const u of selectedUnits){
+    if(!u.moveTarget) continue;
+    const {x:tx,y:ty}=worldToScreen(u.moveTarget.x,u.moveTarget.y);
+    const s=7;
+    ctx.save();
+    ctx.strokeStyle='#00e676'; ctx.lineWidth=2;
+    ctx.shadowBlur=6; ctx.shadowColor='#00e676';
+    ctx.beginPath(); ctx.moveTo(tx-s,ty-s); ctx.lineTo(tx+s,ty+s); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(tx+s,ty-s); ctx.lineTo(tx-s,ty+s); ctx.stroke();
+    ctx.restore();
+  }
+  // 框選矩形
+  if(dragSelBox){
+    const {sx,sy,ex,ey}=dragSelBox;
+    const rx=Math.min(sx,ex),ry=Math.min(sy,ey),rw=Math.abs(ex-sx),rh=Math.abs(ey-sy);
+    ctx.save();
+    ctx.strokeStyle='rgba(0,230,118,0.85)'; ctx.lineWidth=1.5;
+    ctx.setLineDash([5,3]); ctx.strokeRect(rx,ry,rw,rh);
+    ctx.fillStyle='rgba(0,230,118,0.07)'; ctx.fillRect(rx,ry,rw,rh);
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+}
+
+// 下達移動命令：將選取士兵分散送往點擊位置附近
+function issueUnitMoveCommand(cx,cy){
+  const alive=selectedUnits.filter(u=>!u.dead);
+  if(alive.length===0) return;
+  // 畫布座標 → 世界座標（近似，忽略高度差）
+  const wx=cx;
+  const wyApprox=Math.max(0,cy-TOP_OFFSET);
+  const wy=wyApprox+getElevAt(wx,wyApprox)*ELEV_H;
+  // 以點擊為中心散開排列
+  alive.forEach((u,i)=>{
+    const angle=(i/(alive.length||1))*Math.PI*2 - Math.PI/2;
+    const spread=i===0?0:CELL_SIZE*0.6*Math.ceil(i/6+1);
+    u.moveTarget={
+      x:Math.max(u.size,Math.min(COLS*CELL_SIZE-u.size, wx+Math.cos(angle)*spread)),
+      y:Math.max(u.size,Math.min(ROWS*CELL_SIZE-u.size, wy+Math.sin(angle)*spread))
+    };
+  });
 }
 
 function drawGameOver(){
@@ -2062,10 +2224,61 @@ function selectTower(type){
 
 canvas.addEventListener('mousemove', e=>{
   const rect=canvas.getBoundingClientRect();
+  const scaleX=canvas.width/rect.width, scaleY=canvas.height/rect.height;
+  const cx=(e.clientX-rect.left)*scaleX, cy=(e.clientY-rect.top)*scaleY;
   const g=screenToGrid(e.clientX-rect.left, e.clientY-rect.top);
   hoverCol=g.col; hoverRow=g.row;
+  // 框選拖曳更新
+  if(mdDown){
+    const dist=Math.sqrt((cx-mdX)**2+(cy-mdY)**2);
+    if(dist>8){
+      dragSelActive=true;
+      dragSelBox={sx:mdX,sy:mdY,ex:cx,ey:cy};
+    }
+  }
 });
 canvas.addEventListener('mouseleave', ()=>{hoverCol=-1;hoverRow=-1;});
+
+// 框選 mousedown / mouseup
+canvas.addEventListener('mousedown', e=>{
+  if(e.button!==0) return; // 只處理左鍵
+  const rect=canvas.getBoundingClientRect();
+  const scaleX=canvas.width/rect.width, scaleY=canvas.height/rect.height;
+  mdX=(e.clientX-rect.left)*scaleX; mdY=(e.clientY-rect.top)*scaleY;
+  mdDown=true; dragSelActive=false; dragSelBox=null;
+});
+canvas.addEventListener('mouseup', e=>{
+  if(e.button!==0){ mdDown=false; return; }
+  mdDown=false;
+  if(dragSelActive&&dragSelBox){
+    const {sx,sy,ex,ey}=dragSelBox;
+    const minX=Math.min(sx,ex),maxX=Math.max(sx,ex);
+    const minY=Math.min(sy,ey),maxY=Math.max(sy,ey);
+    const boxW=maxX-minX, boxH=maxY-minY;
+    if(boxW>8||boxH>8){
+      // 僅在框有一定大小時才做框選
+      const hit=friendlyUnits.filter(u=>{
+        if(u.dead) return false;
+        const {x:sx2,y:sy2}=worldToScreen(u.x,u.y);
+        return sx2>=minX&&sx2<=maxX&&sy2>=minY&&sy2<=maxY;
+      });
+      if(!e.shiftKey) selectedUnits=hit;
+      else{ for(const u of hit) if(!selectedUnits.includes(u)) selectedUnits.push(u); }
+      dragSelDone=hit.length>0||boxW>20; // 有框選到東西或框夠大才吞掉 click
+    }
+  }
+  dragSelActive=false; dragSelBox=null;
+});
+
+// 右鍵：下達移動命令
+canvas.addEventListener('contextmenu', e=>{
+  e.preventDefault();
+  if(gameOver||selectedUnits.length===0) return;
+  const rect=canvas.getBoundingClientRect();
+  const scaleX=canvas.width/rect.width, scaleY=canvas.height/rect.height;
+  const cx=(e.clientX-rect.left)*scaleX, cy=(e.clientY-rect.top)*scaleY;
+  issueUnitMoveCommand(cx,cy);
+});
 
 // ── 點擊 / 點觸建築邏輯（cx/cy 為畫布像素座標）────────────
 function handleCanvasTap(cx, cy){
@@ -2133,9 +2346,29 @@ function handleCanvasTap(cx, cy){
 }
 
 canvas.addEventListener('click', e=>{
+  // 框選剛結束 → 吞掉這次 click，不觸發建造
+  if(dragSelDone){ dragSelDone=false; return; }
   const rect=canvas.getBoundingClientRect();
   const scaleX=canvas.width/rect.width, scaleY=canvas.height/rect.height;
-  handleCanvasTap((e.clientX-rect.left)*scaleX, (e.clientY-rect.top)*scaleY);
+  const cx=(e.clientX-rect.left)*scaleX, cy=(e.clientY-rect.top)*scaleY;
+  // 優先判斷是否點到友方士兵
+  const hitUnit=friendlyUnits.find(u=>{
+    if(u.dead) return false;
+    const {x:sx,y:sy}=worldToScreen(u.x,u.y);
+    return Math.sqrt((cx-sx)**2+(cy-sy)**2)<=u.size+6;
+  });
+  if(hitUnit){
+    if(e.shiftKey){
+      // Shift 點選：追加／移除
+      const idx=selectedUnits.indexOf(hitUnit);
+      if(idx===-1) selectedUnits.push(hitUnit);
+      else selectedUnits.splice(idx,1);
+    } else {
+      selectedUnits=[hitUnit];
+    }
+    return; // 不繼續建造
+  }
+  handleCanvasTap(cx, cy);
 });
 
 // ── 關卡進度（localStorage）──────────────────────────────
@@ -2191,6 +2424,15 @@ canvas.addEventListener('touchstart', e=>{
       buildTouchStartX=x; buildTouchStartY=y;
       buildTouchMoved=false;
     }
+    // 長按計時器：500ms 後下達移動命令
+    clearTimeout(longPressTimer);
+    longPressPos={x,y};
+    longPressTimer=setTimeout(()=>{
+      if(!buildTouchMoved&&selectedUnits.length>0){
+        issueUnitMoveCommand(longPressPos.x,longPressPos.y);
+        buildTouchId=null; // 取消後續 tap 處理
+      }
+    },500);
   }
 },{passive:false});
 
@@ -2212,7 +2454,10 @@ canvas.addEventListener('touchmove', e=>{
     if(t.identifier===buildTouchId){
       const {x,y}=getCanvasPos(t);
       const dx=x-buildTouchStartX, dy=y-buildTouchStartY;
-      if(Math.sqrt(dx*dx+dy*dy)>10) buildTouchMoved=true;
+      if(Math.sqrt(dx*dx+dy*dy)>10){
+        buildTouchMoved=true;
+        clearTimeout(longPressTimer); // 手指移動 → 取消長按
+      }
     }
   }
 },{passive:false});
@@ -2226,10 +2471,21 @@ canvas.addEventListener('touchend', e=>{
       joystick.dx=0; joystick.dy=0;
     }
     if(t.identifier===buildTouchId){
+      clearTimeout(longPressTimer);
       buildTouchId=null;
       if(!buildTouchMoved){
         const {x,y}=getCanvasPos(t);
-        handleCanvasTap(x, y);
+        // 優先判斷是否點到友方士兵
+        const hitUnit=friendlyUnits.find(u=>{
+          if(u.dead) return false;
+          const {x:sx,y:sy}=worldToScreen(u.x,u.y);
+          return Math.sqrt((x-sx)**2+(y-sy)**2)<=u.size+10; // 觸控放大命中區
+        });
+        if(hitUnit){
+          selectedUnits=[hitUnit];
+        } else {
+          handleCanvasTap(x, y);
+        }
       }
     }
   }
