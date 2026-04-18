@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@900&display=swap');
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
@@ -23,11 +25,55 @@ body {
   width: 100%;
 }
 
-#level-select-screen h1 {
-  font-size: 42px;
-  letter-spacing: 4px;
-  text-shadow: 0 0 20px rgba(241,196,15,0.4);
+@keyframes stone-torchlight {
+  0%, 100% {
+    filter:
+      drop-shadow(-1px -2px 0px rgba(255,255,255,0.18))
+      drop-shadow(3px  3px 0px rgba(0,0,0,1))
+      drop-shadow(5px  5px 8px rgba(0,0,0,0.8))
+      drop-shadow(0 0 18px rgba(180,130,50,0.2));
+  }
+  50% {
+    filter:
+      drop-shadow(-1px -2px 0px rgba(255,255,255,0.18))
+      drop-shadow(3px  3px 0px rgba(0,0,0,1))
+      drop-shadow(5px  5px 8px rgba(0,0,0,0.8))
+      drop-shadow(0 0 32px rgba(200,150,60,0.45));
+  }
 }
+
+#level-select-screen h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 52px;
+  font-weight: 900;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg,
+    #f0ead8 0%,
+    #c8bea4 15%,
+    #a09080 40%,
+    #706050 60%,
+    #9a8a74 80%,
+    #c0b090 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: stone-torchlight 4s ease-in-out infinite;
+  position: relative;
+}
+
+#level-select-screen h1::before,
+#level-select-screen h1::after {
+  content: '❖';
+  font-size: 22px;
+  font-family: serif;
+  -webkit-text-fill-color: rgba(160,140,100,0.7);
+  position: relative;
+  top: -3px;
+}
+#level-select-screen h1::before { margin-right: 18px; }
+#level-select-screen h1::after  { margin-left:  18px; }
 
 .subtitle {
   color: #aaa;
@@ -573,7 +619,7 @@ h1 {
     gap: 14px;
   }
   h1 { font-size: 20px; letter-spacing: 2px; }
-  #level-select-screen h1 { font-size: 30px; }
+  #level-select-screen h1 { font-size: 32px; letter-spacing: 4px; }
 }
 
 /* 塔按鈕在小螢幕縮小 + 面板改為橫向捲動 */
@@ -743,7 +789,7 @@ h1 {
 @media (max-width: 500px) {
   .level-card { padding: 16px 14px; }
   .level-name { font-size: 17px; }
-  #level-select-screen h1 { font-size: 26px; }
+  #level-select-screen h1 { font-size: 26px; letter-spacing: 3px; }
   .subtitle { font-size: 14px; }
 }
 
