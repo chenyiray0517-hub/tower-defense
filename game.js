@@ -1354,8 +1354,11 @@ function startWave(){
   // Boss 波：第10波、第20波三路各生一隻首領
   const isBossWave=(wave+1)===10||(wave+1)===20;
   if(isBossWave){
-    SPAWN_POINTS.forEach((sp,i)=>
-      spawnQueue.push({type:'boss', delay:i*1200, sp}));
+    SPAWN_POINTS.forEach((sp,i)=>{
+      spawnQueue.push({type:'boss', delay:i*2000, sp});
+      console.log(`[Boss Wave] 生成 boss #${i+1}，路線: row=${sp.row} col=${sp.col}，delay=${i*2000}ms`);
+    });
+    console.log('[Boss Wave] spawnQueue boss 總數:', spawnQueue.filter(e=>e.type==='boss').length);
     showMessage('👑 三路首領同時壓境！',3500);
   }
   spawnQueue.sort((a,b)=>a.delay-b.delay);
