@@ -640,6 +640,24 @@ function buySkill(id){
   d.xp-=def.cost; d.skills.push(id); savePlayerData(d);
   refreshXPPanel();
 }
+// 重設所有技能點，返還全部花費的 XP
+function resetSkills(){
+  if(!confirm('確定要重設所有技能點嗎？\n花費的 XP 將全額返還。')) return;
+  const d=loadPlayerData();
+  // 計算並返還所有升級花費
+  for(const [key,def] of Object.entries(UPGRADE_DEFS)){
+    const lv=d.upgrades[key]||0;
+    for(let i=0;i<lv;i++) d.xp+=def.costs[i];
+    d.upgrades[key]=0;
+  }
+  // 計算並返還所有技能花費
+  for(const sk of SKILL_DEFS){
+    if(d.skills.includes(sk.id)) d.xp+=sk.cost;
+  }
+  d.skills=[];
+  savePlayerData(d);
+  refreshXPPanel();
+}
 // 刷新 XP 面板 UI（在 index.html 的 inline script 中定義）
 function refreshXPPanel(){
   if(typeof _refreshXPPanelImpl==='function') _refreshXPPanelImpl();

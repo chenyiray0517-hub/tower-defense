@@ -360,6 +360,27 @@ body {
   cursor: not-allowed;
 }
 
+/* ── XP 重設按鈕 ── */
+#xp-reset-row {
+  margin-top: 20px;
+  text-align: center;
+}
+#xp-reset-btn {
+  background: linear-gradient(135deg, #7f1d1d, #dc2626);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+#xp-reset-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
 /* ── 遊戲標題列 ── */
 #game-header {
   display: flex;
