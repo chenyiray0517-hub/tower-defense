@@ -1454,10 +1454,14 @@ function startWave(){
   spawnQueue=[];
   let roundIdx=0; // 輪流分路計數器
   for(const g of WAVES[wave]){
-    for(let i=0;i<g.count;i++){
+    // 特殊關卡難度加成：非 boss 敵人數量 ×1.15、生成間隔 ×0.90
+    const isBoss=g.type==='boss';
+    const count =(!isBoss&&currentLevel===50)?Math.ceil(g.count*1.15):g.count;
+    const interval=(!isBoss&&currentLevel===50)?Math.floor(g.interval*0.90):g.interval;
+    for(let i=0;i<count;i++){
       // 所有敵人（含 boss）都輪流分路，count 代表總數
       spawnQueue.push({
-        type:g.type, delay:i*g.interval,
+        type:g.type, delay:i*interval,
         sp: SPAWN_POINTS[roundIdx++ % SPAWN_POINTS.length]
       });
     }
