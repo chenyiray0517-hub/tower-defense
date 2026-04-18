@@ -53,12 +53,12 @@ const mapData = [
   [0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+  [2,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],  // row 7: 路線乙入口（左中）
   [0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,3],
+  [2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],  // row 12: 路線丙入口（左下直穿）
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 ];
@@ -74,12 +74,12 @@ const elevData = [
   [1,1,1,1,0,0,0,0,1,1,2,2,3,3,3,3,3,3,3,3], // row 4  path:4-7
   [1,1,1,1,1,1,1,0,1,1,1,1,2,2,3,3,3,3,3,3], // row 5  path:7
   [1,1,1,1,1,1,1,0,0,0,0,0,1,2,2,2,3,3,3,3], // row 6  path:7-11
-  [1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,2,2,3,3,3], // row 7  path:11
+  [0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,2,2,3,3,3], // row 7  path:0-11（路線乙）
   [1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,2,2,2,3], // row 8  path:11-14
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,2,2], // row 9  path:14
   [2,2,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1], // row 10 path:14-18
   [2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1], // row 11 path:18
-  [3,3,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0], // row 12 path:18-19
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // row 12 path:0-19（路線丙全程）
   [3,3,3,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1], // row 13
   [3,3,3,3,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1], // row 14
 ];
@@ -102,13 +102,20 @@ const PATH_WAYPOINTS = [
 const PATH_START = {row:2,  col:0};
 const PATH_END   = {row:12, col:19};
 
-function findPath(occupied) {
-  if(occupied===undefined) occupied=occupiedCells;
+// 三條進攻路線的出生點
+const SPAWN_POINTS = [
+  {row:2,  col:0},  // 路線甲（左上，原有）
+  {row:7,  col:0},  // 路線乙（左中，新）
+  {row:12, col:0},  // 路線丙（左下，新）
+];
+
+function findPath(occupied, start) {
+  if(occupied===undefined||occupied===null) occupied=occupiedCells;
 
   // 動態終點：有堡壘就直奔堡壘，否則退回 PATH_END
   const fort=towers.find(t=>TOWER_TYPES[t.type].isFortress);
   const {row:ER,col:EC}=fort?{row:fort.row,col:fort.col}:PATH_END;
-  const {row:SR,col:SC}=PATH_START;
+  const {row:SR,col:SC}=start||PATH_START;
 
   // 堡壘格子是目的地，不算阻塞
   const effOcc=fort
@@ -795,7 +802,7 @@ class Hero {
 
 // ── 敵人 ─────────────────────────────────────────────────
 class Enemy {
-  constructor(type){
+  constructor(type, spawnPoint){
     const def=ENEMY_TYPES[type];
     this.type=type; this.color=def.color;
     this.maxHp=def.hp; this.hp=def.hp;
@@ -805,8 +812,9 @@ class Enemy {
     this.revived=false; this.reviveFlash=0; this.hitFlash=0;
     this.ghost=def.isGhost||false;
     this.wpIndex=0;
-    this.path=findPath()||[];
-    const s=this.path[0]||PATH_START;
+    this.spawnPoint=spawnPoint||PATH_START;
+    this.path=findPath(null,this.spawnPoint)||[];
+    const s=this.path[0]||this.spawnPoint;
     this.x=s.col*CELL_SIZE+CELL_SIZE/2; this.y=s.row*CELL_SIZE+CELL_SIZE/2;
     this.dead=false; this.reached=false; this.meleeTarget=null;
   }
@@ -826,7 +834,7 @@ class Enemy {
     waveGoldEarned+=earned;
   }
   recalculatePath(){
-    const newPath=findPath();
+    const newPath=findPath(undefined,this.spawnPoint);
     if(!newPath||newPath.length===0) return;
     // 找目前位置最近的路徑點繼續走
     let best=0,bestD=Infinity;
@@ -1316,12 +1324,17 @@ function startWave(){
   SFX.waveStart();
   spawnQueue=[];
   for(const g of WAVES[wave])
-    for(let i=0;i<g.count;i++) spawnQueue.push({type:g.type,delay:i*g.interval});
-  // Boss 波：第10波、第20波各出現一隻首領
+    for(let i=0;i<g.count;i++)
+      spawnQueue.push({
+        type:g.type, delay:i*g.interval,
+        sp: SPAWN_POINTS[Math.floor(Math.random()*SPAWN_POINTS.length)]
+      });
+  // Boss 波：第10波、第20波各路線各出一隻首領
   const isBossWave=(wave+1)===10||(wave+1)===20;
   if(isBossWave){
-    spawnQueue.push({type:'boss',delay:0});
-    showMessage('👑 首領現身！',3500);
+    for(const sp of SPAWN_POINTS)
+      spawnQueue.push({type:'boss',delay:0,sp});
+    showMessage('👑 三路首領同時壓境！',3500);
   }
   spawnQueue.sort((a,b)=>a.delay-b.delay);
   spawnTimer=performance.now(); waveActive=true; wave++;
@@ -1338,8 +1351,10 @@ function updateSpawn(now){
     } else { nextWaveCountdown=0; if(!hasFort) nextWaveAt=performance.now()+3000; }
   } else nextWaveCountdown=0;
   if(!waveActive) return;
-  while(spawnQueue.length&&now-spawnTimer>=spawnQueue[0].delay)
-    enemies.push(new Enemy(spawnQueue.shift().type));
+  while(spawnQueue.length&&now-spawnTimer>=spawnQueue[0].delay){
+    const e=spawnQueue.shift();
+    enemies.push(new Enemy(e.type, e.sp));
+  }
   if(spawnQueue.length===0&&enemies.every(e=>e.dead)){
     waveActive=false;
     // 顯示波次結算
@@ -1435,11 +1450,18 @@ function drawTile(col, row, tower){
   ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=0.5;
   ctx.strokeRect(x,ty,CS,CS);
 
-  // START 標籤
+  // 入口標示（三條路線各不同顏色）
   if(type===TILE.START){
-    ctx.font='bold 10px sans-serif'; ctx.fillStyle='#fff';
+    const spIdx=SPAWN_POINTS.findIndex(sp=>sp.row===row&&sp.col===col);
+    const spColors=['#e74c3c','#e67e22','#9b59b6']; // 甲紅 乙橘 丙紫
+    const spLabels=['甲','乙','丙'];
+    const c=spColors[spIdx]??'#e74c3c';
+    const label=spLabels[spIdx]??'入';
+    ctx.fillStyle=c+'cc';
+    ctx.fillRect(x+2,ty+2,CS-4,CS-4);
+    ctx.font='bold 11px sans-serif'; ctx.fillStyle='#fff';
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('START', x+CS/2, ty+CS/2);
+    ctx.fillText(`▶ ${label}`, x+CS/2, ty+CS/2);
   }
 
   // ③ 塔
@@ -2080,7 +2102,7 @@ function handleCanvasTap(cx, cy){
   const cost=_bDef.levels[0].cost;
   if(gold<cost){showMessage(`💰 金幣不足！需要 ${cost} 金幣`);return;}
   const testOcc=new Set([...occupiedCells,key]);
-  if(!findPath(testOcc)){showMessage('⚠️ 不能完全封鎖路徑！');return;}
+  if(SPAWN_POINTS.some(sp=>!findPath(testOcc,sp))){showMessage('⚠️ 不能完全封鎖路徑！');return;}
   gold-=cost;
   towers.push(new Tower(row,col,selectedTowerType));
   SFX.build();
