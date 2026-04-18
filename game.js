@@ -1351,12 +1351,11 @@ function startWave(){
       });
     }
   }
-  // Boss 波：第10波、第20波額外從三路各加一隻首領
+  // Boss 波：第10波、第20波各生一隻首領（輪流分路）
   const isBossWave=(wave+1)===10||(wave+1)===20;
   if(isBossWave){
-    for(const sp of SPAWN_POINTS)
-      spawnQueue.push({type:'boss',delay:0,sp});
-    showMessage('👑 三路首領同時壓境！',3500);
+    spawnQueue.push({type:'boss',delay:0,sp:SPAWN_POINTS[roundIdx++%SPAWN_POINTS.length]});
+    showMessage('👑 首領壓境！',3000);
   }
   spawnQueue.sort((a,b)=>a.delay-b.delay);
   spawnTimer=performance.now(); waveActive=true; wave++;
