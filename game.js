@@ -1323,13 +1323,23 @@ function startWave(){
   if(wave>=WAVES.length){waveComplete=true;return;}
   SFX.waveStart();
   spawnQueue=[];
-  for(const g of WAVES[wave])
-    for(let i=0;i<g.count;i++)
-      spawnQueue.push({
-        type:g.type, delay:i*g.interval,
-        sp: SPAWN_POINTS[Math.floor(Math.random()*SPAWN_POINTS.length)]
-      });
-  // Boss 波：第10波、第20波各路線各出一隻首領
+  let roundIdx=0; // 輪流分路計數器
+  for(const g of WAVES[wave]){
+    for(let i=0;i<g.count;i++){
+      if(g.type==='boss'){
+        // Boss 一定三路各一隻
+        for(const sp of SPAWN_POINTS)
+          spawnQueue.push({type:'boss', delay:i*g.interval, sp});
+      } else {
+        // 普通敵人輪流分路
+        spawnQueue.push({
+          type:g.type, delay:i*g.interval,
+          sp: SPAWN_POINTS[roundIdx++ % SPAWN_POINTS.length]
+        });
+      }
+    }
+  }
+  // Boss 波：第10波、第20波額外從三路各加一隻首領
   const isBossWave=(wave+1)===10||(wave+1)===20;
   if(isBossWave){
     for(const sp of SPAWN_POINTS)
