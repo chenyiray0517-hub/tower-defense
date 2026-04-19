@@ -880,10 +880,10 @@
         const owned = d.equipment.includes(item.id);
         const isEquipped = gearEquipped[item.slot] === item.id;
         const canBuy = !owned && d.xp >= ri.cost;
-        const card = document.createElement('div');
-        card.className = `gear-item-card gear-rarity-${item.rarity}${isEquipped?' gear-equipped':''}${(!owned&&!prereqMet)?' gear-locked':''}`;
         const reqRarity = RARITY_ORDER[RARITY_ORDER.indexOf(item.rarity)-1] || null;
         const prereqMet = !reqRarity || hasRarityInSlot(d.equipment, item.slot, reqRarity);
+        const card = document.createElement('div');
+        card.className = `gear-item-card gear-rarity-${item.rarity}${isEquipped?' gear-equipped':''}${(!owned&&!prereqMet)?' gear-locked':''}`;
         const reqRarityName = reqRarity ? RARITY_INFO[reqRarity].name : null;
         let btnHtml = '';
         if(!owned){
