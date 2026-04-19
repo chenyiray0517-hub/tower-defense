@@ -575,7 +575,7 @@ const ENEMY_TYPES = {
   tank:     { name:'重甲兵', emoji:'🛡️', color:'#2c3e50', hp:420,  speed:0.78, reward:30,  size:18, attackDmg:44, attackRate:1700, attackRange:CELL_SIZE*1.6 },
   revenant: { name:'重生兵', emoji:'💀', color:'#7b1fa2', hp:180,  speed:1.2,  reward:25,  size:15, attackDmg:21, attackRate:1300, attackRange:CELL_SIZE*1.4, canRevive:true },
   ghost:    { name:'幽靈兵', emoji:'👻', color:'#90a4ae', hp:100,  speed:2.3,  reward:20,  size:13, attackDmg:12, attackRate:1000, attackRange:CELL_SIZE*1.2, isGhost:true },
-  boss:     { name:'首領',   emoji:'👑', color:'#ff6f00', hp:3400, speed:0.55, reward:200, size:26, attackDmg:58, attackRate:1700, attackRange:CELL_SIZE*2.0, isBoss:true },
+  boss:     { name:'首領',   emoji:'👑', color:'#ff6f00', hp:3400, speed:0.55, reward:200, size:26, attackDmg:45, attackRate:1700, attackRange:CELL_SIZE*2.0, isBoss:true },
 };
 
 const BUILD_RANGE = 3 * CELL_SIZE;
