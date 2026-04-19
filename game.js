@@ -570,12 +570,12 @@ let friendlyUnits = [];
 let towerIdCounter = 0;
 
 const ENEMY_TYPES = {
-  grunt:    { name:'步兵',   emoji:'👾', color:'#e74c3c', hp:92,   speed:1.3, reward:10,  size:14, attackDmg:13, attackRate:1300, attackRange:CELL_SIZE*1.4 },
-  runner:   { name:'快衝兵', emoji:'💨', color:'#e67e22', hp:48,   speed:2.85, reward:15,  size:11, attackDmg:8,  attackRate:600,  attackRange:CELL_SIZE*1.1 },
-  tank:     { name:'重甲兵', emoji:'🛡️', color:'#2c3e50', hp:345,  speed:0.72,reward:30,  size:18, attackDmg:37, attackRate:1800, attackRange:CELL_SIZE*1.6 },
-  revenant: { name:'重生兵', emoji:'💀', color:'#7b1fa2', hp:150,  speed:1.1, reward:25,  size:15, attackDmg:17, attackRate:1400, attackRange:CELL_SIZE*1.4, canRevive:true },
-  ghost:    { name:'幽靈兵', emoji:'👻', color:'#90a4ae', hp:83,   speed:2.1, reward:20,  size:13, attackDmg:9,  attackRate:1100, attackRange:CELL_SIZE*1.2, isGhost:true },
-  boss:     { name:'首領',   emoji:'👑', color:'#ff6f00', hp:2800, speed:0.50,reward:200, size:26, attackDmg:48, attackRate:1800, attackRange:CELL_SIZE*2.0, isBoss:true },
+  grunt:    { name:'步兵',   emoji:'👾', color:'#e74c3c', hp:110,  speed:1.4,  reward:10,  size:14, attackDmg:16, attackRate:1250, attackRange:CELL_SIZE*1.4 },
+  runner:   { name:'快衝兵', emoji:'💨', color:'#e67e22', hp:58,   speed:3.05, reward:15,  size:11, attackDmg:10, attackRate:560,  attackRange:CELL_SIZE*1.1 },
+  tank:     { name:'重甲兵', emoji:'🛡️', color:'#2c3e50', hp:420,  speed:0.78, reward:30,  size:18, attackDmg:44, attackRate:1700, attackRange:CELL_SIZE*1.6 },
+  revenant: { name:'重生兵', emoji:'💀', color:'#7b1fa2', hp:180,  speed:1.2,  reward:25,  size:15, attackDmg:21, attackRate:1300, attackRange:CELL_SIZE*1.4, canRevive:true },
+  ghost:    { name:'幽靈兵', emoji:'👻', color:'#90a4ae', hp:100,  speed:2.3,  reward:20,  size:13, attackDmg:12, attackRate:1000, attackRange:CELL_SIZE*1.2, isGhost:true },
+  boss:     { name:'首領',   emoji:'👑', color:'#ff6f00', hp:3400, speed:0.55, reward:200, size:26, attackDmg:58, attackRate:1700, attackRange:CELL_SIZE*2.0, isBoss:true },
 };
 
 const BUILD_RANGE = 3 * CELL_SIZE;
