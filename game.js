@@ -1771,11 +1771,20 @@ function startWave(){
   SFX.waveStart();
   spawnQueue=[];
   let roundIdx=0; // 輪流分路計數器
+  // 各關卡生成縮放表（countMult：敵人數倍率，ivMult：間隔倍率）
+  const SPAWN_SCALE={
+    5:{countMult:0.88,ivMult:1.10},
+    6:{countMult:0.88,ivMult:1.10},
+    7:{countMult:0.88,ivMult:1.10},
+    8:{countMult:0.88,ivMult:1.10},
+    50:{countMult:1.00,ivMult:1.00}, // L50波次數據已含強化，不額外調整
+    99:{countMult:0.88,ivMult:1.10},
+  };
+  const sc=SPAWN_SCALE[currentLevel]||{countMult:1,ivMult:1};
   for(const g of WAVES[wave]){
-    // 特殊關卡難度加成：非 boss 敵人數量 ×1.15、生成間隔 ×0.90
     const isBoss=g.type==='boss';
-    const count =(!isBoss&&currentLevel===50)?Math.ceil(g.count*1.15):g.count;
-    const interval=(!isBoss&&currentLevel===50)?Math.floor(g.interval*0.90):g.interval;
+    const count =isBoss?g.count:Math.max(1,Math.ceil(g.count*sc.countMult));
+    const interval=isBoss?g.interval:Math.round(g.interval*sc.ivMult);
     for(let i=0;i<count;i++){
       // 所有敵人（含 boss）都輪流分路，count 代表總數
       spawnQueue.push({
