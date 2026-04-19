@@ -414,6 +414,29 @@ const LEVEL_WAVES = {
     [{type:'grunt',count:26,interval:570},{type:'runner',count:20,interval:380},{type:'tank',count:9,interval:1300},{type:'revenant',count:5,interval:1900},{type:'ghost',count:5,interval:1000}],
     [{type:'grunt',count:30,interval:540},{type:'runner',count:25,interval:360},{type:'tank',count:12,interval:1200},{type:'revenant',count:6,interval:1700},{type:'ghost',count:6,interval:900}],
   ],
+  // ── L99：孤身闖關（20波，無建築，主角三條命）──────────────
+  99: [
+    [{type:'grunt',count:5,interval:1200}],
+    [{type:'grunt',count:6,interval:1100},{type:'runner',count:2,interval:800}],
+    [{type:'runner',count:5,interval:700}],
+    [{type:'grunt',count:7,interval:1000},{type:'runner',count:3,interval:750}],
+    [{type:'grunt',count:5,interval:900},{type:'tank',count:1,interval:3000}],
+    [{type:'runner',count:6,interval:650},{type:'ghost',count:2,interval:1200}],
+    [{type:'grunt',count:8,interval:900},{type:'runner',count:4,interval:700},{type:'tank',count:1,interval:2800}],
+    [{type:'ghost',count:3,interval:1000},{type:'runner',count:5,interval:650}],
+    [{type:'grunt',count:8,interval:850},{type:'tank',count:2,interval:2500},{type:'revenant',count:1,interval:3000}],
+    [{type:'boss',count:1,interval:5000}],
+    [{type:'grunt',count:10,interval:800},{type:'runner',count:5,interval:650}],
+    [{type:'revenant',count:3,interval:2000},{type:'runner',count:5,interval:700}],
+    [{type:'tank',count:3,interval:2200},{type:'ghost',count:2,interval:1200}],
+    [{type:'grunt',count:10,interval:750},{type:'runner',count:6,interval:600},{type:'ghost',count:2,interval:1100}],
+    [{type:'revenant',count:4,interval:1800},{type:'tank',count:2,interval:2200}],
+    [{type:'ghost',count:4,interval:1000},{type:'runner',count:6,interval:600}],
+    [{type:'grunt',count:12,interval:700},{type:'tank',count:3,interval:2000},{type:'revenant',count:2,interval:2000}],
+    [{type:'runner',count:8,interval:550},{type:'ghost',count:4,interval:900},{type:'revenant',count:2,interval:1900}],
+    [{type:'grunt',count:12,interval:700},{type:'runner',count:8,interval:600},{type:'tank',count:3,interval:2000},{type:'ghost',count:3,interval:1000}],
+    [{type:'boss',count:1,interval:5000},{type:'grunt',count:8,interval:800},{type:'runner',count:6,interval:650}],
+  ],
 };
 
 // ── 塔 & 經濟建築定義 ────────────────────────────────────
@@ -574,6 +597,7 @@ function getSellValue(tower){
 // ── 遊戲狀態 ─────────────────────────────────────────────
 let towers=[], enemies=[], bullets=[];
 let gold=300, wave=0, gameOver=false, WAVES=[], hero=null;
+let heroLives=-1; // -1=無限；>=0 為剩餘命數（特殊模式）
 let selectedTowerType='archer', selectedBuilding=null;
 // ── 士兵指揮系統 ──────────────────────────────────────────
 let selectedUnits=[];          // 當前選取的友方士兵陣列
@@ -744,7 +768,8 @@ function initGame(levelNum) {
   researchDone=new Set();           // 必須在 hero = new Hero() 之前清空
   towers=[]; enemies=[]; bullets=[]; friendlyUnits=[]; selectedUnits=[];
   const _pdat=loadPlayerData();
-  gold=(levelNum===50?600:300)+(_pdat.skills.includes('richStart')?100:0);
+  heroLives = (levelNum===99) ? 3 : -1;
+  gold = levelNum===99 ? 0 : (levelNum===50?600:300)+(_pdat.skills.includes('richStart')?100:0);
   wave=0; gameOver=false;
   spawnQueue=[]; waveActive=false; waveComplete=false;
   nextWaveAt=0; nextWaveCountdown=0; towerIdCounter=0;
@@ -809,6 +834,18 @@ class Hero {
         this.hp=this.maxHp;
         this.invincible=now+5000;
         showMessage('🔥 浴火重生！原地滿血復活！',3000);
+      } else if(heroLives>=0){
+        // 三條命模式
+        heroLives--;
+        this.hp=this.maxHp;
+        this.x=1*CELL_SIZE+CELL_SIZE/2; this.y=13*CELL_SIZE+CELL_SIZE/2;
+        this.invincible=now+3000;
+        if(heroLives>0){
+          showMessage(`💀 陣亡！剩餘 ${heroLives} 條命`,2500);
+        } else {
+          showMessage('💀 三條命已盡！遊戲結束',3000);
+          gameOver=true; SFX.gameOver(); SFX.stopBGM();
+        }
       } else {
         this.hp=this.maxHp;
         this.x=1*CELL_SIZE+CELL_SIZE/2; this.y=13*CELL_SIZE+CELL_SIZE/2;
@@ -1574,7 +1611,7 @@ function startWave(){
 }
 function updateSpawn(now){
   if(!waveActive&&!gameOver&&!waveComplete){
-    const hasFort=towers.some(t=>TOWER_TYPES[t.type].isFortress);
+    const hasFort=currentLevel===99||towers.some(t=>TOWER_TYPES[t.type].isFortress);
     if(nextWaveAt>0&&hasFort){
       nextWaveCountdown=Math.max(0,Math.ceil((nextWaveAt-now)/1000));
       if(now>=nextWaveAt) startWave();
@@ -1756,6 +1793,17 @@ function drawHUD(){
     ctx.font='bold 18px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='top';
     ctx.fillStyle=nextWaveCountdown<=5?'#e74c3c':'#f1c40f';
     ctx.fillText(`下一波 ${nextWaveCountdown}s`, canvas.width-10, TOP_OFFSET+8);
+  }
+  // 三條命 HUD（左上角）
+  if(heroLives>=0){
+    const total=3;
+    const spacing=28;
+    const sx=14, sy=TOP_OFFSET+8;
+    for(let i=0;i<total;i++){
+      ctx.font='22px serif';
+      ctx.textAlign='left'; ctx.textBaseline='top';
+      ctx.fillText(i<heroLives?'❤️':'🖤', sx+i*spacing, sy);
+    }
   }
   const now=performance.now();
   if(messageText&&now<messageExpire){
@@ -2357,7 +2405,7 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Escape') selectedBuilding=null;
   if((e.key==='q'||e.key==='Q')&&hero&&!gameOver){ e.preventDefault(); hero.castSkill(0,performance.now()); }
   if((e.key==='e'||e.key==='E')&&hero&&!gameOver){ e.preventDefault(); hero.castSkill(1,performance.now()); }
-  if(e.key==='Enter'&&!waveActive&&!gameOver&&towers.some(t=>TOWER_TYPES[t.type].isFortress)) nextWaveAt=performance.now();
+  if(e.key==='Enter'&&!waveActive&&!gameOver&&(currentLevel===99||towers.some(t=>TOWER_TYPES[t.type].isFortress))) nextWaveAt=performance.now();
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
 });
 document.addEventListener('keyup', e=>{ keys[e.key]=false; });
@@ -2475,6 +2523,7 @@ function handleCanvasTap(cx, cy){
     return;
   }
   selectedBuilding=null;
+  if(currentLevel===99){showMessage('🚫 孤身闖關模式：無法建造！');return;}
   if(!isInBuildRange(row,col)){showMessage('⚠️ 主角需要靠近才能建造！');return;}
   const _bDef=TOWER_TYPES[selectedTowerType];
   if(_bDef.isFortress&&towers.some(t=>TOWER_TYPES[t.type].isFortress)){

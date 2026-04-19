@@ -119,6 +119,20 @@
         <div class="level-start-btn">開始</div>
       </div>
 
+      <!-- ★ 特殊關卡 99 ★ -->
+      <div class="level-card level-card-special" data-level="99" onclick="startLevel(99)">
+        <div class="level-badge level-badge-special">99</div>
+        <div class="level-name level-name-special">☠️ 孤身闖關</div>
+        <div class="level-diff diff-special">💀 傳說+</div>
+        <div class="level-desc">主角只有三條命，無法建造任何防禦工事。靠著一己之力殺出重圍！</div>
+        <div class="level-meta">
+          <span>❤️×3 無法建築</span>
+          <span>🌊 20波</span>
+          <span>💰 —</span>
+        </div>
+        <div class="level-start-btn level-start-btn-special">接受挑戰</div>
+      </div>
+
       <!-- ★ 特殊關卡 50 ★ -->
       <div class="level-card level-card-special" data-level="50" onclick="startLevel(50)">
         <div class="level-badge level-badge-special">50</div>
@@ -700,6 +714,7 @@
       document.getElementById('level-select-screen').style.display = 'flex';
       document.getElementById('xp-panel').style.display = 'flex';
       document.getElementById('intro-section').style.display = 'flex';
+      document.getElementById('tower-panel').style.display = '';
       cancelAnimationFrame(animFrameId);
       SFX.stopBGM();
       refreshLevelCards();
@@ -717,6 +732,7 @@
       document.getElementById('xp-panel').style.display = 'none';
       document.getElementById('intro-section').style.display = 'none';
       document.getElementById('game-screen').style.display = 'flex';
+      document.getElementById('tower-panel').style.display = levelNum === 99 ? 'none' : '';
       initGame(levelNum);
       rescaleMap();
     }
@@ -825,12 +841,18 @@
       const fortTower = typeof towers!=='undefined'
         ? towers.find(t=>typeof TOWER_TYPES!=='undefined'&&TOWER_TYPES[t.type]?.isFortress)
         : null;
-      document.getElementById('ui-fortress-hp').textContent = fortTower ? `${Math.ceil(fortTower.hp)} / ${fortTower.maxHp}` : '未建造';
+      const isL99 = typeof currentLevel!=='undefined' && currentLevel===99;
+      if(isL99){
+        const lives = typeof heroLives!=='undefined' ? heroLives : 3;
+        document.getElementById('ui-fortress-hp').textContent = '❤️'.repeat(Math.max(0,lives))+'🖤'.repeat(Math.max(0,3-lives));
+      } else {
+        document.getElementById('ui-fortress-hp').textContent = fortTower ? `${Math.ceil(fortTower.hp)} / ${fortTower.maxHp}` : '未建造';
+      }
       document.getElementById('ui-fortress-maxhp').textContent = '';
       document.getElementById('ui-gold').textContent  = gold;
-document.getElementById('ui-wave').textContent  = `${wave} / ${WAVES.length}`;
+      document.getElementById('ui-wave').textContent  = `${wave} / ${WAVES.length}`;
       const waveBtn = document.getElementById('btn-wave');
-      const hasFort = !!fortTower;
+      const hasFort = isL99 || !!fortTower;
       const canSkip = !waveActive && wave < WAVES.length && !gameOver && nextWaveAt > 0 && hasFort;
       waveBtn.disabled = !canSkip;
       if (wave >= WAVES.length && !waveActive) {
@@ -846,7 +868,8 @@ document.getElementById('ui-wave').textContent  = `${wave} / ${WAVES.length}`;
       }
     }
     document.getElementById('btn-wave').addEventListener('click', () => {
-      const hasFort = typeof towers!=='undefined' && towers.some(t=>typeof TOWER_TYPES!=='undefined'&&TOWER_TYPES[t.type]?.isFortress);
+      const isL99 = typeof currentLevel!=='undefined' && currentLevel===99;
+      const hasFort = isL99 || (typeof towers!=='undefined' && towers.some(t=>typeof TOWER_TYPES!=='undefined'&&TOWER_TYPES[t.type]?.isFortress));
       if (!waveActive && wave < WAVES.length && !gameOver && hasFort) {
         nextWaveAt = performance.now(); // 立刻觸發
       }
