@@ -650,7 +650,7 @@ const ACTIVE_SKILL_DEFS = [
   { id:'thunderStrike',name:'⚡ 天降雷霆', cost:2200, cooldown:15000, desc:'對場上5個隨機敵人各造成4×攻擊力傷害' },
   { id:'dash',         name:'💨 疾風衝刺', cost:1600, cooldown:8000,  desc:'向移動方向衝刺4格距離，衝刺期間無敵0.5秒' },
   { id:'shieldBarrier',name:'🛡️ 護盾障壁', cost:2000, cooldown:30000, desc:'為主角提供護盾吸收 150% 最大HP 的傷害，持續 8 秒' },
-  { id:'plagueCloud',  name:'☣️ 瘟疫雲霧', cost:1800, cooldown:20000, desc:'對場上所有敵人施加瘟疫（每 0.5s 造成 2× 攻擊力傷害，持續 4 秒）' },
+  { id:'plagueCloud',  name:'☣️ 瘟疫雲霧', cost:1800, cooldown:20000, desc:'對場上所有敵人施加瘟疫（每 0.5s 造成 0.4× 攻擊力傷害，持續 4 秒）' },
 ];
 // 確保跨 script 可存取
 window.UPGRADE_DEFS      = UPGRADE_DEFS;
@@ -994,7 +994,7 @@ class Hero {
         for(const e of enemies){
           if(e.dead) continue;
           e.plagueUntil=Math.max(e.plagueUntil||0,plagueEnd);
-          e.plagueDmg=this.damage*2;
+          e.plagueDmg=Math.floor(this.damage*0.4);
           hit++;
         }
         showMessage(`☣️ 瘟疫雲霧！感染 ${hit} 個敵人`,1500);
