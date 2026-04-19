@@ -174,10 +174,16 @@
     <div id="gear-slot-tabs"></div>
     <div id="gear-item-grid"></div>
 
+    <div class="xp-section-title">🏆 成就系統 <span id="ach-count-label" class="xp-active-hint"></span></div>
+    <div id="ach-grid"></div>
+
     <div id="xp-reset-row">
       <button id="xp-reset-btn" onclick="resetSkills()">🔄 重設技能點（全額返還 XP）</button>
     </div>
   </div>
+
+  <!-- 成就解鎖 Toast -->
+  <div id="ach-toast"></div>
 
   <!-- ══ 圖鑑區 ══ -->
   <div id="intro-section">
@@ -906,6 +912,32 @@
           <div class="gear-item-stats">${fmtGearStats(item.stats)}</div>
           <div class="gear-item-btns">${btnHtml}</div>`;
         gearGrid.appendChild(card);
+      }
+
+      // ── 成就系統渲染 ──────────────────────────────────
+      const achGrid = document.getElementById('ach-grid');
+      if(achGrid){
+        achGrid.innerHTML = '';
+        const earned = new Set(d.achievements || []);
+        const unlockedCount = ACHIEVEMENT_DEFS.filter(a=>earned.has(a.id)).length;
+        const achLabel = document.getElementById('ach-count-label');
+        if(achLabel) achLabel.textContent = `（${unlockedCount} / ${ACHIEVEMENT_DEFS.length} 已解鎖）`;
+        for(const ach of ACHIEVEMENT_DEFS){
+          const unlocked = earned.has(ach.id);
+          const card = document.createElement('div');
+          card.className = 'ach-card' + (unlocked ? ' ach-unlocked' : '');
+          card.innerHTML = `
+            <div class="ach-icon">${ach.icon}</div>
+            <div class="ach-body">
+              <div class="ach-name">${ach.name}</div>
+              <div class="ach-desc">${ach.desc}</div>
+              ${unlocked
+                ? `<div class="ach-xp">✅ +${ach.xp} XP 已獲得</div>`
+                : `<div class="ach-locked-label">🔒 未解鎖・完成後獲得 ${ach.xp} XP</div>`
+              }
+            </div>`;
+          achGrid.appendChild(card);
+        }
       }
     }
 

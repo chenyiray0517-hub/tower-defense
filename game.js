@@ -652,6 +652,121 @@ const ACTIVE_SKILL_DEFS = [
   { id:'shieldBarrier',name:'🛡️ 護盾障壁', cost:2000, cooldown:30000, desc:'為主角提供護盾吸收 150% 最大HP 的傷害，持續 8 秒' },
   { id:'plagueCloud',  name:'☣️ 瘟疫雲霧', cost:1800, cooldown:20000, desc:'對場上所有敵人施加瘟疫（每 0.5s 造成 0.4× 攻擊力傷害，持續 4 秒）' },
 ];
+// ── 成就定義 ─────────────────────────────────────────────
+const ACHIEVEMENT_DEFS = [
+  // 進度
+  { id:'clear1',    name:'初出茅廬',   icon:'🌱', desc:'通關第1關',                       xp:50  },
+  { id:'clearAll8', name:'百戰沙場',   icon:'⚔️', desc:'通關全部普通關卡（1–8關）',          xp:200 },
+  { id:'clear50',   name:'試煉征服者', icon:'👑', desc:'通關終極試煉（第50關）',             xp:500 },
+  { id:'clear99',   name:'孤膽英雄',   icon:'🦸', desc:'通關孤身闖關（第99關）',            xp:500 },
+  // 擊殺
+  { id:'kill100',   name:'初戰告捷',   icon:'💀', desc:'累計擊殺 100 個敵人',              xp:80  },
+  { id:'kill1000',  name:'殺戮機器',   icon:'🗡️', desc:'累計擊殺 1,000 個敵人',           xp:150 },
+  { id:'kill10000', name:'萬夫莫敵',   icon:'💢', desc:'累計擊殺 10,000 個敵人',           xp:300 },
+  { id:'boss10',    name:'首領剋星',   icon:'🏆', desc:'累計擊殺 10 個首領',               xp:100 },
+  { id:'ghost50',   name:'幽靈獵人',   icon:'👻', desc:'累計擊殺 50 個幽靈兵',             xp:100 },
+  // 裝備
+  { id:'gearFull',  name:'全副武裝',   icon:'🎽', desc:'同時裝備四個部位的裝備',            xp:150 },
+  { id:'mythicOwn', name:'神話之力',   icon:'✨', desc:'擁有神話稀有度裝備',               xp:200 },
+  // 技能
+  { id:'activeAll', name:'技能大師',   icon:'⚡', desc:'解鎖全部主動技能',                 xp:150 },
+  // 挑戰
+  { id:'noHit',     name:'無傷通關',   icon:'🛡️', desc:'通關某一關時主角未受到任何傷害',     xp:200 },
+  { id:'fortFull',  name:'堡壘無缺',   icon:'🏰', desc:'通關某一關時堡壘保持滿血',          xp:150 },
+  { id:'gold5000',  name:'富甲一方',   icon:'💰', desc:'單局金幣收入（擊殺）達 5,000',      xp:100 },
+];
+
+// 每局重置追蹤
+let heroTookDamage = false;
+let gameGoldEarned = 0;
+let _sessionKills = 0, _sessionBossKills = 0, _sessionGhostKills = 0;
+
+function _flushSessionStats(){
+  if(_sessionKills===0&&_sessionBossKills===0&&_sessionGhostKills===0) return;
+  const d=loadPlayerData();
+  d.stats=d.stats||{totalKills:0,bossKills:0,ghostKills:0};
+  d.stats.totalKills+=_sessionKills;
+  d.stats.bossKills +=_sessionBossKills;
+  d.stats.ghostKills+=_sessionGhostKills;
+  _sessionKills=0; _sessionBossKills=0; _sessionGhostKills=0;
+  savePlayerData(d);
+}
+
+function checkAchievements(trigger){
+  const d=loadPlayerData();
+  const had=new Set(d.achievements||[]);
+  const newOnes=[];
+  const earn=(id)=>{ if(!had.has(id)){ had.add(id); newOnes.push(id); }};
+
+  // 進度成就（通關後觸發）
+  if(trigger==='levelClear'){
+    const cleared=loadCleared();
+    if(cleared.has(1))                                   earn('clear1');
+    if([1,2,3,4,5,6,7,8].every(l=>cleared.has(l)))      earn('clearAll8');
+    if(cleared.has(50))                                  earn('clear50');
+    if(cleared.has(99))                                  earn('clear99');
+    // 挑戰成就
+    if(!heroTookDamage)                                  earn('noHit');
+    if(gameGoldEarned>=5000)                             earn('gold5000');
+    const fort=typeof towers!=='undefined'?towers.find(t=>TOWER_TYPES[t.type].isFortress):null;
+    if(fort&&fort.hp>=fort.maxHp)                        earn('fortFull');
+  }
+
+  // 擊殺成就（每波統計後觸發）
+  const s=d.stats||{};
+  if((s.totalKills||0)>=100)   earn('kill100');
+  if((s.totalKills||0)>=1000)  earn('kill1000');
+  if((s.totalKills||0)>=10000) earn('kill10000');
+  if((s.bossKills||0)>=10)     earn('boss10');
+  if((s.ghostKills||0)>=50)    earn('ghost50');
+
+  // 裝備成就
+  const gear=d.equippedGear||{};
+  if(gear.head&&gear.chest&&gear.legs&&gear.boots)       earn('gearFull');
+  if((d.equipment||[]).some(id=>{
+    const item=EQUIPMENT_DEFS.find(e=>e.id===id);
+    return item&&item.rarity==='mythic';
+  }))                                                    earn('mythicOwn');
+
+  // 技能成就
+  if(ACTIVE_SKILL_DEFS.every(s=>d.activeSkills.includes(s.id))) earn('activeAll');
+
+  if(newOnes.length>0){
+    d.achievements=[...had];
+    for(const id of newOnes){
+      const ach=ACHIEVEMENT_DEFS.find(a=>a.id===id);
+      if(ach) d.xp+=ach.xp;
+    }
+    savePlayerData(d);
+    for(const id of newOnes){
+      const ach=ACHIEVEMENT_DEFS.find(a=>a.id===id);
+      if(ach) showAchievementToast(ach);
+    }
+    if(typeof refreshXPPanel==='function') refreshXPPanel();
+  }
+}
+
+let _achToastQueue=[], _achToastShowing=false;
+function showAchievementToast(ach){
+  _achToastQueue.push(ach);
+  if(!_achToastShowing) _nextAchToast();
+}
+function _nextAchToast(){
+  if(_achToastQueue.length===0){_achToastShowing=false;return;}
+  _achToastShowing=true;
+  const ach=_achToastQueue.shift();
+  const el=document.getElementById('ach-toast');
+  if(!el){_achToastShowing=false;return;}
+  el.innerHTML=`<span class="ach-toast-icon">${ach.icon}</span><div><div class="ach-toast-title">🏆 成就解鎖！</div><div class="ach-toast-name">${ach.name}</div><div class="ach-toast-xp">+${ach.xp} XP</div></div>`;
+  el.classList.add('ach-toast-show');
+  setTimeout(()=>{
+    el.classList.remove('ach-toast-show');
+    setTimeout(_nextAchToast, 400);
+  }, 3200);
+}
+window.ACHIEVEMENT_DEFS = ACHIEVEMENT_DEFS;
+window.checkAchievements = checkAchievements;
+
 // 確保跨 script 可存取
 window.UPGRADE_DEFS      = UPGRADE_DEFS;
 window.SKILL_DEFS        = SKILL_DEFS;
@@ -769,12 +884,12 @@ function buyEquipment(id){
   }
   const cost=RARITY_INFO[item.rarity].cost;
   if(d.xp<cost){alert(`經驗值不足！需要 ${cost} XP，目前 ${d.xp} XP`);return;}
-  d.xp-=cost; d.equipment.push(id); savePlayerData(d); refreshXPPanel();
+  d.xp-=cost; d.equipment.push(id); savePlayerData(d); checkAchievements('gear'); refreshXPPanel();
 }
 function equipGear(id){
   const d=loadPlayerData();
   const item=EQUIPMENT_DEFS.find(e=>e.id===id); if(!item||!d.equipment.includes(id)) return;
-  d.equippedGear[item.slot]=id; savePlayerData(d); refreshXPPanel();
+  d.equippedGear[item.slot]=id; savePlayerData(d); checkAchievements('gear'); refreshXPPanel();
 }
 function unequipGear(slot){
   const d=loadPlayerData();
@@ -796,8 +911,10 @@ function loadPlayerData(){
       activeSlots:Array.isArray(d.activeSlots)?d.activeSlots.slice(0,3).concat([null,null,null]).slice(0,3):[null,null,null],
       equipment:Array.isArray(d.equipment)?d.equipment:[],
       equippedGear:{head:d.equippedGear?.head||null,chest:d.equippedGear?.chest||null,legs:d.equippedGear?.legs||null,boots:d.equippedGear?.boots||null},
+      achievements:Array.isArray(d.achievements)?d.achievements:[],
+      stats:{totalKills:d.stats?.totalKills||0,bossKills:d.stats?.bossKills||0,ghostKills:d.stats?.ghostKills||0},
     };
-  }catch(e){return {xp:0,upgrades:{hp:0,damage:0,atkSpeed:0,speed:0},skills:[],equippedSkills:[],activeSkills:[],activeSlots:[null,null,null],equipment:[],equippedGear:{head:null,chest:null,legs:null,boots:null}};}
+  }catch(e){return {xp:0,upgrades:{hp:0,damage:0,atkSpeed:0,speed:0},skills:[],equippedSkills:[],activeSkills:[],activeSlots:[null,null,null],equipment:[],equippedGear:{head:null,chest:null,legs:null,boots:null},achievements:[],stats:{totalKills:0,bossKills:0,ghostKills:0}};}
 }
 function savePlayerData(d){localStorage.setItem(PLAYER_KEY,JSON.stringify(d));}
 // 安靜地加XP（不打斷遊戲訊息）；返回新總量
@@ -871,7 +988,7 @@ function buyActiveSkill(id){
   const def=ACTIVE_SKILL_DEFS.find(s=>s.id===id); if(!def) return;
   if(d.activeSkills.includes(id)){alert('已解鎖！');return;}
   if(d.xp<def.cost){alert(`經驗值不足！需要 ${def.cost} XP，目前 ${d.xp} XP`);return;}
-  d.xp-=def.cost; d.activeSkills.push(id); savePlayerData(d); refreshXPPanel();
+  d.xp-=def.cost; d.activeSkills.push(id); savePlayerData(d); checkAchievements('skill'); refreshXPPanel();
 }
 // 裝備主動技能到指定槽（0=Q, 1=E）
 function equipActiveSkill(id, slot){
@@ -928,6 +1045,7 @@ function initGame(levelNum) {
   const _mp=document.getElementById('mobile-upgrade-panel');
   if(_mp) _mp.classList.remove('mp-active');
   waveKills=0; waveGoldEarned=0; waveDmgTaken=0; waveSummary=null; waveSummaryExpire=0;
+  heroTookDamage=false; gameGoldEarned=0; _sessionKills=0; _sessionBossKills=0; _sessionGhostKills=0;
   currentLevel=levelNum;
   occupiedCells.clear();
   selectedTowerType='archer';
@@ -987,6 +1105,7 @@ class Hero {
     }
     this.hp-=dmg;
     waveDmgTaken+=dmg;
+    heroTookDamage=true;
     if(this.hp<=0){
       if(this._rebirthAvail){
         this._rebirthAvail=false;
@@ -1206,6 +1325,10 @@ class Enemy {
     gold+=earned;
     waveKills++;
     waveGoldEarned+=earned;
+    gameGoldEarned+=earned;
+    _sessionKills++;
+    if(ENEMY_TYPES[this.type].isBoss)  _sessionBossKills++;
+    if(ENEMY_TYPES[this.type].isGhost) _sessionGhostKills++;
   }
   recalculatePath(){
     const newPath=findPath(undefined,this.spawnPoint);
@@ -1843,6 +1966,9 @@ function updateSpawn(now){
     addXPSilent(waveXP);
     waveSummary={kills:waveKills,gold:waveGoldEarned,dmg:Math.floor(waveDmgTaken),waveNum:wave,isBossWave,xp:waveXP};
     waveSummaryExpire=performance.now()+4000;
+    // 刷新成就統計
+    _flushSessionStats();
+    checkAchievements('wave');
     // 特殊關卡（50）：波次結束後重設為 30 秒整，確保玩家有充裕準備時間
     if(currentLevel===50&&wave<WAVES.length) nextWaveAt=performance.now()+30000;
     if(wave>=WAVES.length){
@@ -1853,6 +1979,7 @@ function updateSpawn(now){
       const clearXP=currentLevel===50?500:150;
       addXPSilent(clearXP);
       waveSummary.clearXP=clearXP;
+      checkAchievements('levelClear');
       refreshLevelCards();
       refreshXPPanel();
     }
