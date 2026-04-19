@@ -649,6 +649,8 @@ const ACTIVE_SKILL_DEFS = [
   { id:'heal',         name:'💊 戰地回春', cost:1500, cooldown:22000, desc:'立即回復40%最大HP' },
   { id:'thunderStrike',name:'⚡ 天降雷霆', cost:2200, cooldown:15000, desc:'對場上5個隨機敵人各造成4×攻擊力傷害' },
   { id:'dash',         name:'💨 疾風衝刺', cost:1600, cooldown:8000,  desc:'向移動方向衝刺4格距離，衝刺期間無敵0.5秒' },
+  { id:'shieldBarrier',name:'🛡️ 護盾障壁', cost:2000, cooldown:30000, desc:'為主角提供護盾吸收 150% 最大HP 的傷害，持續 8 秒' },
+  { id:'plagueCloud',  name:'☣️ 瘟疫雲霧', cost:1800, cooldown:20000, desc:'對場上所有敵人施加瘟疫（每 0.5s 造成 2× 攻擊力傷害，持續 4 秒）' },
 ];
 // 確保跨 script 可存取
 window.UPGRADE_DEFS      = UPGRADE_DEFS;
@@ -664,9 +666,9 @@ function loadPlayerData(){
       skills:Array.isArray(d.skills)?d.skills:[],
       equippedSkills:Array.isArray(d.equippedSkills)?d.equippedSkills.slice(0,7):[],
       activeSkills:Array.isArray(d.activeSkills)?d.activeSkills:[],
-      activeSlots:Array.isArray(d.activeSlots)?d.activeSlots.slice(0,2):[null,null],
+      activeSlots:Array.isArray(d.activeSlots)?d.activeSlots.slice(0,3).concat([null,null,null]).slice(0,3):[null,null,null],
     };
-  }catch(e){return {xp:0,upgrades:{hp:0,damage:0,atkSpeed:0,speed:0},skills:[],equippedSkills:[],activeSkills:[],activeSlots:[null,null]};}
+  }catch(e){return {xp:0,upgrades:{hp:0,damage:0,atkSpeed:0,speed:0},skills:[],equippedSkills:[],activeSkills:[],activeSlots:[null,null,null]};}
 }
 function savePlayerData(d){localStorage.setItem(PLAYER_KEY,JSON.stringify(d));}
 // 安靜地加XP（不打斷遊戲訊息）；返回新總量
@@ -726,7 +728,7 @@ function resetSkills(){
   for(const sk of ACTIVE_SKILL_DEFS){
     if(d.activeSkills.includes(sk.id)) d.xp+=sk.cost;
   }
-  d.activeSkills=[]; d.activeSlots=[null,null];
+  d.activeSkills=[]; d.activeSlots=[null,null,null];
   savePlayerData(d);
   refreshXPPanel();
 }
@@ -742,7 +744,7 @@ function buyActiveSkill(id){
 function equipActiveSkill(id, slot){
   const d=loadPlayerData();
   if(!d.activeSkills.includes(id)) return;
-  if(d.activeSlots[1-slot]===id) d.activeSlots[1-slot]=null; // 從另一槽移除
+  for(let i=0;i<3;i++) if(i!==slot&&d.activeSlots[i]===id) d.activeSlots[i]=null; // 從其他槽移除
   d.activeSlots[slot]=id; savePlayerData(d); refreshXPPanel();
 }
 // 從指定槽卸下技能
@@ -812,6 +814,7 @@ class Hero {
     this.x=1*CELL_SIZE+CELL_SIZE/2; this.y=13*CELL_SIZE+CELL_SIZE/2;
     this.size=14; this.range=2.8*CELL_SIZE;
     this.lastAttack=0; this.dead=false; this.invincible=0;
+    this.shield=0; this.shieldUntil=0;
     this.maxHp=260; this.hp=260;
     this.damage=40; this.attackRate=620; this.speed=3.3;
     // 載入技能旗標
@@ -825,9 +828,10 @@ class Hero {
     this._areaBlast=_pd.equippedSkills.includes('areaBlast');
     this._lastStand=_pd.equippedSkills.includes('lastStand');
     this._multiShot=_pd.equippedSkills.includes('multiShot');
-    // 主動技能槽（Q=0, E=1）
-    this.activeSlots=(_pd.activeSlots||[null,null]).slice(0,2);
-    this.skillCooldowns=[0,0]; // 每槽下次可用的 performance.now() 時間戳
+    // 主動技能槽（Q=0, E=1, R=2）
+    const _rawSlots=_pd.activeSlots||[null,null,null];
+    this.activeSlots=_rawSlots.slice(0,3).concat([null,null,null]).slice(0,3);
+    this.skillCooldowns=[0,0,0]; // 每槽下次可用的 performance.now() 時間戳
     this.applyResearch();
   }
   applyResearch(){
@@ -841,6 +845,12 @@ class Hero {
   }
   takeDamage(dmg, now){
     if(now<this.invincible) return;
+    // 護盾障壁吸收傷害
+    if(this.shield>0&&now<(this.shieldUntil||0)){
+      const absorbed=Math.min(this.shield,dmg);
+      this.shield-=absorbed; dmg-=absorbed;
+      if(dmg<=0) return;
+    }
     this.hp-=dmg;
     waveDmgTaken+=dmg;
     if(this.hp<=0){
@@ -972,6 +982,24 @@ class Hero {
         showMessage('💨 疾風衝刺！',1000);
         break;
       }
+      case 'shieldBarrier':{
+        this.shield=(this.shield||0)+Math.floor(this.maxHp*1.5);
+        this.shieldUntil=now+8000;
+        showMessage(`🛡️ 護盾障壁！吸收 ${Math.floor(this.maxHp*1.5)} 傷害`,1500);
+        break;
+      }
+      case 'plagueCloud':{
+        const plagueEnd=now+4000;
+        let hit=0;
+        for(const e of enemies){
+          if(e.dead) continue;
+          e.plagueUntil=Math.max(e.plagueUntil||0,plagueEnd);
+          e.plagueDmg=this.damage*2;
+          hit++;
+        }
+        showMessage(`☣️ 瘟疫雲霧！感染 ${hit} 個敵人`,1500);
+        break;
+      }
     }
   }
   draw(now){
@@ -997,6 +1025,13 @@ class Hero {
     const r=Math.max(0,this.hp/this.maxHp);
     ctx.fillStyle=r>0.5?'#2196f3':r>0.25?'#f39c12':'#e74c3c';
     ctx.fillRect(bx,by,bw*r,bh);
+    // 護盾條
+    if(this.shield>0&&now<(this.shieldUntil||0)){
+      const shieldMax=Math.floor(this.maxHp*1.5);
+      const sr=Math.max(0,this.shield/shieldMax);
+      ctx.fillStyle='rgba(100,200,255,0.85)';
+      ctx.fillRect(bx,by-5,bw*sr,3);
+    }
     ctx.font='bold 9px sans-serif'; ctx.fillStyle='#00e5ff';
     ctx.textAlign='center'; ctx.textBaseline='bottom';
     ctx.fillText('主角',sx,by-1);
@@ -1014,6 +1049,7 @@ class Enemy {
     this.lastAttack=0; this.slowUntil=0; this.fortSlowUntil=0; this.fortSlowMult=1;
     this.revived=false; this.reviveFlash=0; this.hitFlash=0;
     this.poisonUntil=0; this.poisonDmg=0; this.lastPoisonTick=0;
+    this.plagueUntil=0; this.plagueDmg=0; this.lastPlagueTick=0;
     this.ghost=def.isGhost||false;
     this.wpIndex=0;
     this.spawnPoint=spawnPoint||PATH_START;
@@ -1058,6 +1094,13 @@ class Enemy {
     if(now<this.poisonUntil&&now-this.lastPoisonTick>=500){
       this.lastPoisonTick=now;
       this.hp-=this.poisonDmg;
+      this.hitFlash=now+200;
+      if(this.hp<=0){this.tryKill(getKillBonus());return;}
+    }
+    // ── 瘟疫雲霧持續傷害 ──
+    if(now<(this.plagueUntil||0)&&now-(this.lastPlagueTick||0)>=500){
+      this.lastPlagueTick=now;
+      this.hp-=(this.plagueDmg||0);
       this.hitFlash=now+200;
       if(this.hp<=0){this.tryKill(getKillBonus());return;}
     }
@@ -1876,12 +1919,12 @@ function drawHUD(){
     ctx.restore();
   }
   // ── 主動技能槽 HUD（右下角）──
-  if(hero&&(hero.activeSlots[0]||hero.activeSlots[1])){
+  if(hero&&(hero.activeSlots[0]||hero.activeSlots[1]||hero.activeSlots[2])){
     const slotW=64, slotH=64, gap=10;
-    const totalW=slotW*2+gap;
+    const totalW=slotW*3+gap*2;
     const bx=canvas.width-totalW-14;
     const by=canvas.height-slotH-14;
-    for(let i=0;i<2;i++){
+    for(let i=0;i<3;i++){
       const id=hero.activeSlots[i];
       const sx=bx+(slotW+gap)*i, sy=by;
       // 背景框
@@ -1897,7 +1940,7 @@ function drawHUD(){
         ctx.fillText(def.name.match(/\p{Emoji}/u)?.[0]||'?', sx+slotW/2, sy+slotH/2-6);
         // 按鍵標籤
         ctx.font='bold 11px sans-serif'; ctx.fillStyle='#aef'; ctx.textBaseline='bottom';
-        ctx.fillText(i===0?'[Q]':'[E]', sx+slotW/2, sy+slotH-4);
+        ctx.fillText(i===0?'[Q]':i===1?'[E]':'[R]', sx+slotW/2, sy+slotH-4);
         // 冷卻遮罩
         const remaining=Math.max(0,hero.skillCooldowns[i]-now);
         if(remaining>0){
@@ -1914,7 +1957,7 @@ function drawHUD(){
       } else {
         ctx.font='12px sans-serif'; ctx.fillStyle='rgba(120,120,120,0.7)';
         ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.fillText(i===0?'Q':'E', sx+slotW/2, sy+slotH/2-6);
+        ctx.fillText(i===0?'Q':i===1?'E':'R', sx+slotW/2, sy+slotH/2-6);
         ctx.font='10px sans-serif'; ctx.fillStyle='rgba(100,100,100,0.5)';
         ctx.textBaseline='bottom';
         ctx.fillText('未裝備', sx+slotW/2, sy+slotH-4);
@@ -2420,6 +2463,7 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Escape') selectedBuilding=null;
   if((e.key==='q'||e.key==='Q')&&hero&&!gameOver){ e.preventDefault(); hero.castSkill(0,performance.now()); }
   if((e.key==='e'||e.key==='E')&&hero&&!gameOver){ e.preventDefault(); hero.castSkill(1,performance.now()); }
+  if((e.key==='r'||e.key==='R')&&hero&&!gameOver){ e.preventDefault(); hero.castSkill(2,performance.now()); }
   if(e.key==='Enter'&&!waveActive&&!gameOver&&(currentLevel===99||towers.some(t=>TOWER_TYPES[t.type].isFortress))) nextWaveAt=performance.now();
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
 });
