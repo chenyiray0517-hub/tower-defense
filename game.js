@@ -1124,10 +1124,11 @@ class FriendlyUnit {
 
     // ── 自動 AI 模式 ──
     let target=null, minD=Infinity;
+    const visionR = hero ? hero.range : 2.8*CELL_SIZE;
     for(const e of enemies){
       if(e.dead) continue;
       const d=Math.sqrt((e.x-this.x)**2+(e.y-this.y)**2);
-      if(d<minD){minD=d;target=e;}
+      if(d<=visionR && d<minD){minD=d;target=e;}
     }
     if(!target) return;
     const dx=target.x-this.x, dy=target.y-this.y;
