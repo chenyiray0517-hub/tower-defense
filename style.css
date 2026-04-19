@@ -357,6 +357,12 @@ body {
   opacity: 0.75;
 }
 
+.xp-skill-equipped {
+  border-color: rgba(245,158,11,0.7) !important;
+  box-shadow: 0 0 10px rgba(245,158,11,0.2);
+  opacity: 1 !important;
+}
+
 .xp-card-name {
   font-size: 14px;
   font-weight: bold;

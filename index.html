@@ -163,7 +163,7 @@
     <div class="xp-section-title">⬆️ 屬性升級</div>
     <div id="upgrade-grid"></div>
 
-    <div class="xp-section-title">🌟 特殊技能</div>
+    <div class="xp-section-title">🌟 特殊技能 <span id="skill-equip-count" class="xp-active-hint">（0 / 7 已裝備）</span></div>
     <div id="skill-grid"></div>
 
     <div class="xp-section-title">⚡ 主動技能 <span class="xp-active-hint">（裝備2個，遊戲中 Q / E 施放）</span></div>
@@ -780,18 +780,29 @@
       // 技能
       const skGrid = document.getElementById('skill-grid');
       skGrid.innerHTML = '';
+      const equippedSkills = d.equippedSkills || [];
+      const equippedCount = equippedSkills.length;
+      const countEl = document.getElementById('skill-equip-count');
+      if(countEl) countEl.textContent = `（${equippedCount} / 7 已裝備）`;
       for (const sk of SKILL_DEFS) {
         const owned = d.skills.includes(sk.id);
         const canBuy = !owned && d.xp >= sk.cost;
+        const isEquipped = equippedSkills.includes(sk.id);
+        const canEquip = owned && !isEquipped && equippedCount < 7;
         const card = document.createElement('div');
-        card.className = 'xp-skill-card' + (owned ? ' xp-card-owned' : '');
+        card.className = 'xp-skill-card' + (isEquipped ? ' xp-skill-equipped' : owned ? ' xp-card-owned' : '');
+        let actionHtml = '';
+        if (!owned) {
+          actionHtml = `<button class="xp-buy-btn${canBuy ? '' : ' xp-buy-disabled'}" onclick="buySkill('${sk.id}')">${sk.cost} XP 解鎖</button>`;
+        } else if (isEquipped) {
+          actionHtml = `<button class="xp-equip-btn xp-equip-on" onclick="unequipSkill('${sk.id}')">✅ 已裝備（點擊卸下）</button>`;
+        } else {
+          actionHtml = `<button class="xp-equip-btn${canEquip ? '' : ' xp-buy-disabled'}" onclick="equipSkill('${sk.id}')">${canEquip ? '裝備' : '裝備欄已滿'}</button>`;
+        }
         card.innerHTML = `
           <div class="xp-card-name">${sk.name}</div>
           <div class="xp-card-desc">${sk.desc}</div>
-          ${owned
-            ? '<div class="xp-card-maxlabel">✅ 已解鎖</div>'
-            : `<button class="xp-buy-btn${canBuy ? '' : ' xp-buy-disabled'}" onclick="buySkill('${sk.id}')">${sk.cost} XP 解鎖</button>`
-          }`;
+          ${actionHtml}`;
         skGrid.appendChild(card);
       }
 

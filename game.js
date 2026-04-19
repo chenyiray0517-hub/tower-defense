@@ -583,7 +583,7 @@ const BUILD_RANGE = 3 * CELL_SIZE;
 function getKillBonus(){
   let b=0;
   for(const t of towers) if(TOWER_TYPES[t.type].isMarket) b+=t.bonusPerKill;
-  if(loadPlayerData().skills.includes('goldFever')) b+=3;
+  if(loadPlayerData().equippedSkills.includes('goldFever')) b+=3;
   return b;
 }
 
@@ -662,10 +662,11 @@ function loadPlayerData(){
       xp:d.xp||0,
       upgrades:{hp:d.upgrades?.hp||0,damage:d.upgrades?.damage||0,atkSpeed:d.upgrades?.atkSpeed||0,speed:d.upgrades?.speed||0},
       skills:Array.isArray(d.skills)?d.skills:[],
+      equippedSkills:Array.isArray(d.equippedSkills)?d.equippedSkills.slice(0,7):[],
       activeSkills:Array.isArray(d.activeSkills)?d.activeSkills:[],
       activeSlots:Array.isArray(d.activeSlots)?d.activeSlots.slice(0,2):[null,null],
     };
-  }catch(e){return {xp:0,upgrades:{hp:0,damage:0,atkSpeed:0,speed:0},skills:[],activeSkills:[],activeSlots:[null,null]};}
+  }catch(e){return {xp:0,upgrades:{hp:0,damage:0,atkSpeed:0,speed:0},skills:[],equippedSkills:[],activeSkills:[],activeSlots:[null,null]};}
 }
 function savePlayerData(d){localStorage.setItem(PLAYER_KEY,JSON.stringify(d));}
 // 安靜地加XP（不打斷遊戲訊息）；返回新總量
@@ -689,8 +690,22 @@ function buySkill(id){
   const def=SKILL_DEFS.find(s=>s.id===id); if(!def) return;
   if(d.skills.includes(id)){alert('已解鎖！');return;}
   if(d.xp<def.cost){alert(`經驗值不足！需要 ${def.cost} XP，目前 ${d.xp} XP`);return;}
-  d.xp-=def.cost; d.skills.push(id); savePlayerData(d);
-  refreshXPPanel();
+  d.xp-=def.cost; d.skills.push(id);
+  if(d.equippedSkills.length<7) d.equippedSkills.push(id); // 槽位未滿自動裝備
+  savePlayerData(d); refreshXPPanel();
+}
+// 裝備特殊技能（最多7個）
+function equipSkill(id){
+  const d=loadPlayerData();
+  if(!d.skills.includes(id)) return;
+  if(d.equippedSkills.includes(id)) return;
+  if(d.equippedSkills.length>=7){alert('裝備欄已滿！最多同時裝備 7 個特殊技能，請先卸下一個。');return;}
+  d.equippedSkills.push(id); savePlayerData(d); refreshXPPanel();
+}
+// 卸下特殊技能
+function unequipSkill(id){
+  const d=loadPlayerData();
+  d.equippedSkills=d.equippedSkills.filter(s=>s!==id); savePlayerData(d); refreshXPPanel();
 }
 // 重設所有技能點，返還全部花費的 XP
 function resetSkills(){
@@ -706,7 +721,7 @@ function resetSkills(){
   for(const sk of SKILL_DEFS){
     if(d.skills.includes(sk.id)) d.xp+=sk.cost;
   }
-  d.skills=[];
+  d.skills=[]; d.equippedSkills=[];
   // 返還主動技能花費
   for(const sk of ACTIVE_SKILL_DEFS){
     if(d.activeSkills.includes(sk.id)) d.xp+=sk.cost;
@@ -769,7 +784,7 @@ function initGame(levelNum) {
   towers=[]; enemies=[]; bullets=[]; friendlyUnits=[]; selectedUnits=[];
   const _pdat=loadPlayerData();
   heroLives = (levelNum===99) ? 3 : -1;
-  gold = levelNum===99 ? 0 : (levelNum===50?600:300)+(_pdat.skills.includes('richStart')?100:0);
+  gold = levelNum===99 ? 0 : (levelNum===50?600:300)+(_pdat.equippedSkills.includes('richStart')?100:0);
   wave=0; gameOver=false;
   spawnQueue=[]; waveActive=false; waveComplete=false;
   nextWaveAt=0; nextWaveCountdown=0; towerIdCounter=0;
@@ -801,15 +816,15 @@ class Hero {
     this.damage=40; this.attackRate=620; this.speed=3.3;
     // 載入技能旗標
     const _pd=loadPlayerData();
-    this._rebirthAvail=_pd.skills.includes('rebirth');
-    this._ghostSlayer=_pd.skills.includes('ghostSlayer');
-    this._bossSlayer=_pd.skills.includes('bossSlayer');
-    this._chainThunder=_pd.skills.includes('chainThunder');
-    this._berserker=_pd.skills.includes('berserker');
-    this._poisonBlade=_pd.skills.includes('poisonBlade');
-    this._areaBlast=_pd.skills.includes('areaBlast');
-    this._lastStand=_pd.skills.includes('lastStand');
-    this._multiShot=_pd.skills.includes('multiShot');
+    this._rebirthAvail=_pd.equippedSkills.includes('rebirth');
+    this._ghostSlayer=_pd.equippedSkills.includes('ghostSlayer');
+    this._bossSlayer=_pd.equippedSkills.includes('bossSlayer');
+    this._chainThunder=_pd.equippedSkills.includes('chainThunder');
+    this._berserker=_pd.equippedSkills.includes('berserker');
+    this._poisonBlade=_pd.equippedSkills.includes('poisonBlade');
+    this._areaBlast=_pd.equippedSkills.includes('areaBlast');
+    this._lastStand=_pd.equippedSkills.includes('lastStand');
+    this._multiShot=_pd.equippedSkills.includes('multiShot');
     // 主動技能槽（Q=0, E=1）
     this.activeSlots=(_pd.activeSlots||[null,null]).slice(0,2);
     this.skillCooldowns=[0,0]; // 每槽下次可用的 performance.now() 時間戳
@@ -1208,7 +1223,7 @@ class FriendlyUnit {
     const def=FRIENDLY_UNIT_TYPES[type];
     this.type=type; this.source=source;
     this.x=x; this.y=y;
-    const _eliteM=loadPlayerData().skills.includes('eliteArmy')?1.3:1;
+    const _eliteM=loadPlayerData().equippedSkills.includes('eliteArmy')?1.3:1;
     const hpM=(researchDone.has('hpBoost')?1.6:1)*_eliteM;
     const dmM=(researchDone.has('dmgBoost')?1.6:1)*_eliteM;
     this.maxHp=Math.floor(def.hp*hpM); this.hp=this.maxHp;
@@ -1324,7 +1339,7 @@ class Tower {
     const _def=TOWER_TYPES[type];
     // 堡壘 HP 定義在 levels 裡；其他塔從 def.hp 取
     let _baseHp=_def.isFortress?_def.levels[0].hp:_def.hp;
-    const _skills=loadPlayerData().skills;
+    const _skills=loadPlayerData().equippedSkills;
     if(_def.isFortress&&_skills.includes('fortressGuard')) _baseHp=Math.floor(_baseHp*1.3);
     if(!_def.isFortress&&_skills.includes('towerFortify')) _baseHp=Math.floor(_baseHp*1.25);
     this.maxHp=_baseHp;
@@ -1366,7 +1381,7 @@ class Tower {
     else if(def.isLab){ /* no combat stats */ }
     else if(def.isFortress){
       let newMax=s.hp;
-      if(loadPlayerData().skills.includes('fortressGuard')) newMax=Math.floor(newMax*1.3);
+      if(loadPlayerData().equippedSkills.includes('fortressGuard')) newMax=Math.floor(newMax*1.3);
       const ratio=this.maxHp>0?this.hp/this.maxHp:1;
       this.maxHp=newMax;
       this.hp=Math.min(Math.ceil(newMax*ratio),newMax);
