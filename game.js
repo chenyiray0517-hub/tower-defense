@@ -620,11 +620,11 @@ const SKILL_DEFS=[
 ];
 // ── 主動技能定義 ─────────────────────────────────────────
 const ACTIVE_SKILL_DEFS = [
-  { id:'whirlwind',    name:'🌀 旋風斬',   cost:1200, cooldown:10000, desc:'對周圍3格內所有敵人造成3×攻擊力傷害' },
-  { id:'blizzard',     name:'❄️ 極凍術',   cost:1400, cooldown:18000, desc:'使全場敵人減速65%，持續4秒' },
-  { id:'heal',         name:'💊 戰地回春', cost:1000, cooldown:22000, desc:'立即回復40%最大HP' },
-  { id:'thunderStrike',name:'⚡ 天降雷霆', cost:1600, cooldown:15000, desc:'對場上5個隨機敵人各造成4×攻擊力傷害' },
-  { id:'dash',         name:'💨 疾風衝刺', cost:1100, cooldown:8000,  desc:'向移動方向衝刺4格距離，衝刺期間無敵0.5秒' },
+  { id:'whirlwind',    name:'🌀 旋風斬',   cost:1800, cooldown:10000, desc:'對周圍3格內所有敵人造成3×攻擊力傷害' },
+  { id:'blizzard',     name:'❄️ 極凍術',   cost:2000, cooldown:18000, desc:'使全場敵人減速65%，持續4秒' },
+  { id:'heal',         name:'💊 戰地回春', cost:1500, cooldown:22000, desc:'立即回復40%最大HP' },
+  { id:'thunderStrike',name:'⚡ 天降雷霆', cost:2200, cooldown:15000, desc:'對場上5個隨機敵人各造成4×攻擊力傷害' },
+  { id:'dash',         name:'💨 疾風衝刺', cost:1600, cooldown:8000,  desc:'向移動方向衝刺4格距離，衝刺期間無敵0.5秒' },
 ];
 // 確保跨 script 可存取
 window.UPGRADE_DEFS      = UPGRADE_DEFS;
