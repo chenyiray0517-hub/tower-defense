@@ -1105,8 +1105,8 @@ class Enemy {
       if(this.hp<=0){this.tryKill(getKillBonus());return;}
     }
 
-    // ── 已抵達堡壘格子：直接攻打 ──
-    if(this.reached){
+    // ── 已抵達堡壘格子：直接攻打（L99 無此機制）──
+    if(this.reached&&currentLevel!==99){
       const fort=towers.find(t=>TOWER_TYPES[t.type].isFortress);
       if(!fort){ this.dead=true; return; }
       if(now-this.lastAttack>=this.attackRate){
@@ -1176,6 +1176,17 @@ class Enemy {
     let effSpeed=this.speed;
     if(now<this.slowUntil) effSpeed*=0.35;
     if(now<this.fortSlowUntil) effSpeed*=this.fortSlowMult;
+
+    // L99：直接追主角
+    if(currentLevel===99){
+      if(hero&&!hero.dead){
+        const dx=hero.x-this.x, dy=hero.y-this.y, dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist>effSpeed){this.x+=dx/dist*effSpeed; this.y+=dy/dist*effSpeed;}
+        else{this.x=hero.x; this.y=hero.y;}
+      }
+      return;
+    }
+
     if(this.wpIndex>=this.path.length-1){
       // 抵達堡壘
       const fort=towers.find(t=>TOWER_TYPES[t.type].isFortress);
