@@ -618,9 +618,18 @@ const SKILL_DEFS=[
   {id:'lastStand',    name:'🔱 困獸之鬥',  cost:800, desc:'堡壘 HP 低於 25% 時，主角攻擊速度 +60%'},
   {id:'multiShot',    name:'🎯 三連矢',    cost:1000, desc:'主角每次攻擊同時對最近的 3 個不同目標發射'},
 ];
+// ── 主動技能定義 ─────────────────────────────────────────
+const ACTIVE_SKILL_DEFS = [
+  { id:'whirlwind',    name:'🌀 旋風斬',   cost:600, cooldown:10000, desc:'對周圍3格內所有敵人造成3×攻擊力傷害' },
+  { id:'blizzard',     name:'❄️ 極凍術',   cost:700, cooldown:18000, desc:'使全場敵人減速65%，持續4秒' },
+  { id:'heal',         name:'💊 戰地回春', cost:500, cooldown:22000, desc:'立即回復40%最大HP' },
+  { id:'thunderStrike',name:'⚡ 天降雷霆', cost:800, cooldown:15000, desc:'對場上5個隨機敵人各造成4×攻擊力傷害' },
+  { id:'dash',         name:'💨 疾風衝刺', cost:550, cooldown:8000,  desc:'向移動方向衝刺4格距離，衝刺期間無敵0.5秒' },
+];
 // 確保跨 script 可存取
-window.UPGRADE_DEFS = UPGRADE_DEFS;
-window.SKILL_DEFS   = SKILL_DEFS;
+window.UPGRADE_DEFS      = UPGRADE_DEFS;
+window.SKILL_DEFS        = SKILL_DEFS;
+window.ACTIVE_SKILL_DEFS = ACTIVE_SKILL_DEFS;
 
 function loadPlayerData(){
   try{
@@ -628,9 +637,11 @@ function loadPlayerData(){
     return {
       xp:d.xp||0,
       upgrades:{hp:d.upgrades?.hp||0,damage:d.upgrades?.damage||0,atkSpeed:d.upgrades?.atkSpeed||0,speed:d.upgrades?.speed||0},
-      skills:Array.isArray(d.skills)?d.skills:[]
+      skills:Array.isArray(d.skills)?d.skills:[],
+      activeSkills:Array.isArray(d.activeSkills)?d.activeSkills:[],
+      activeSlots:Array.isArray(d.activeSlots)?d.activeSlots.slice(0,2):[null,null],
     };
-  }catch(e){return {xp:0,upgrades:{hp:0,damage:0,atkSpeed:0,speed:0},skills:[]};}
+  }catch(e){return {xp:0,upgrades:{hp:0,damage:0,atkSpeed:0,speed:0},skills:[],activeSkills:[],activeSlots:[null,null]};}
 }
 function savePlayerData(d){localStorage.setItem(PLAYER_KEY,JSON.stringify(d));}
 // 安靜地加XP（不打斷遊戲訊息）；返回新總量
@@ -672,8 +683,33 @@ function resetSkills(){
     if(d.skills.includes(sk.id)) d.xp+=sk.cost;
   }
   d.skills=[];
+  // 返還主動技能花費
+  for(const sk of ACTIVE_SKILL_DEFS){
+    if(d.activeSkills.includes(sk.id)) d.xp+=sk.cost;
+  }
+  d.activeSkills=[]; d.activeSlots=[null,null];
   savePlayerData(d);
   refreshXPPanel();
+}
+// 購買主動技能
+function buyActiveSkill(id){
+  const d=loadPlayerData();
+  const def=ACTIVE_SKILL_DEFS.find(s=>s.id===id); if(!def) return;
+  if(d.activeSkills.includes(id)){alert('已解鎖！');return;}
+  if(d.xp<def.cost){alert(`經驗值不足！需要 ${def.cost} XP，目前 ${d.xp} XP`);return;}
+  d.xp-=def.cost; d.activeSkills.push(id); savePlayerData(d); refreshXPPanel();
+}
+// 裝備主動技能到指定槽（0=Q, 1=E）
+function equipActiveSkill(id, slot){
+  const d=loadPlayerData();
+  if(!d.activeSkills.includes(id)) return;
+  if(d.activeSlots[1-slot]===id) d.activeSlots[1-slot]=null; // 從另一槽移除
+  d.activeSlots[slot]=id; savePlayerData(d); refreshXPPanel();
+}
+// 從指定槽卸下技能
+function unequipActiveSkill(slot){
+  const d=loadPlayerData();
+  d.activeSlots[slot]=null; savePlayerData(d); refreshXPPanel();
 }
 // 刷新 XP 面板 UI（在 index.html 的 inline script 中定義）
 function refreshXPPanel(){
@@ -749,6 +785,9 @@ class Hero {
     this._areaBlast=_pd.skills.includes('areaBlast');
     this._lastStand=_pd.skills.includes('lastStand');
     this._multiShot=_pd.skills.includes('multiShot');
+    // 主動技能槽（Q=0, E=1）
+    this.activeSlots=(_pd.activeSlots||[null,null]).slice(0,2);
+    this.skillCooldowns=[0,0]; // 每槽下次可用的 performance.now() 時間戳
     this.applyResearch();
   }
   applyResearch(){
@@ -828,6 +867,58 @@ class Hero {
           for(const ce of chain)
             bullets.push(new Bullet(target.x,target.y,ce,Math.floor(chainDmg*0.6),'#f1c40f',9,false,0));
         }
+      }
+    }
+  }
+  castSkill(slotIdx, now){
+    const skillId=this.activeSlots?.[slotIdx];
+    if(!skillId) return;
+    if(now<this.skillCooldowns[slotIdx]){ showMessage('⏳ 技能冷卻中...',800); return; }
+    const def=ACTIVE_SKILL_DEFS.find(s=>s.id===skillId); if(!def) return;
+    this.skillCooldowns[slotIdx]=now+def.cooldown;
+    switch(skillId){
+      case 'whirlwind':{
+        const r=3*CELL_SIZE; let hit=0;
+        for(const e of enemies){
+          if(e.dead) continue;
+          const d=Math.sqrt((e.x-this.x)**2+(e.y-this.y)**2);
+          if(d<=r){ e.hp-=this.damage*3; e.hitFlash=now+300; hit++; if(e.hp<=0) e.tryKill(getKillBonus()); }
+        }
+        showMessage(`🌀 旋風斬！擊中 ${hit} 個敵人`,1500); SFX.heroShoot?.();
+        break;
+      }
+      case 'blizzard':{
+        const until=now+4000;
+        for(const e of enemies){ if(!e.dead) e.slowUntil=Math.max(e.slowUntil,until); }
+        showMessage('❄️ 極凍術！全場敵人減速',1500);
+        break;
+      }
+      case 'heal':{
+        const restored=Math.floor(this.maxHp*0.4);
+        this.hp=Math.min(this.maxHp,this.hp+restored);
+        showMessage(`💊 戰地回春！回復 ${restored} HP`,1500);
+        break;
+      }
+      case 'thunderStrike':{
+        const targets=enemies.filter(e=>!e.dead).sort(()=>Math.random()-0.5).slice(0,5);
+        for(const t of targets)
+          bullets.push(new Bullet(this.x,this.y,t,this.damage*4,'#f1c40f',10,false,0));
+        showMessage(`⚡ 天降雷霆！${targets.length} 道閃電`,1500); SFX.heroShoot?.();
+        break;
+      }
+      case 'dash':{
+        let dx=0, dy=0;
+        if(keys['w']||keys['W']||keys['ArrowUp'])    dy=-1;
+        if(keys['s']||keys['S']||keys['ArrowDown'])  dy=1;
+        if(keys['a']||keys['A']||keys['ArrowLeft'])  dx=-1;
+        if(keys['d']||keys['D']||keys['ArrowRight']) dx=1;
+        if(dx===0&&dy===0) dy=-1; // 無方向時預設向上
+        const mag=Math.sqrt(dx*dx+dy*dy);
+        this.x=Math.max(this.size,Math.min(COLS*CELL_SIZE-this.size,this.x+dx/mag*4*CELL_SIZE));
+        this.y=Math.max(this.size,Math.min(ROWS*CELL_SIZE-this.size,this.y+dy/mag*4*CELL_SIZE));
+        this.invincible=now+500;
+        showMessage('💨 疾風衝刺！',1000);
+        break;
       }
     }
   }
@@ -1720,6 +1811,53 @@ function drawHUD(){
     ctx.globalAlpha=1;
     ctx.restore();
   }
+  // ── 主動技能槽 HUD（右下角）──
+  if(hero&&(hero.activeSlots[0]||hero.activeSlots[1])){
+    const slotW=64, slotH=64, gap=10;
+    const totalW=slotW*2+gap;
+    const bx=canvas.width-totalW-14;
+    const by=canvas.height-slotH-14;
+    for(let i=0;i<2;i++){
+      const id=hero.activeSlots[i];
+      const sx=bx+(slotW+gap)*i, sy=by;
+      // 背景框
+      ctx.save();
+      ctx.fillStyle='rgba(5,10,30,0.82)';
+      ctx.beginPath(); ctx.roundRect(sx,sy,slotW,slotH,8); ctx.fill();
+      ctx.strokeStyle=id?'#00e5ff':'rgba(80,80,80,0.5)'; ctx.lineWidth=1.8; ctx.stroke();
+      if(id){
+        const def=ACTIVE_SKILL_DEFS.find(s=>s.id===id);
+        // 技能 emoji
+        ctx.font='28px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillStyle='#fff';
+        ctx.fillText(def.name.match(/\p{Emoji}/u)?.[0]||'?', sx+slotW/2, sy+slotH/2-6);
+        // 按鍵標籤
+        ctx.font='bold 11px sans-serif'; ctx.fillStyle='#aef'; ctx.textBaseline='bottom';
+        ctx.fillText(i===0?'[Q]':'[E]', sx+slotW/2, sy+slotH-4);
+        // 冷卻遮罩
+        const remaining=Math.max(0,hero.skillCooldowns[i]-now);
+        if(remaining>0){
+          const frac=remaining/def.cooldown;
+          ctx.fillStyle='rgba(0,0,0,0.65)';
+          ctx.beginPath();
+          ctx.moveTo(sx+slotW/2,sy+slotH/2);
+          ctx.arc(sx+slotW/2,sy+slotH/2,slotW*0.72,-Math.PI/2,-Math.PI/2+Math.PI*2*frac);
+          ctx.closePath(); ctx.fill();
+          ctx.font='bold 14px sans-serif'; ctx.fillStyle='#fff';
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillText(Math.ceil(remaining/1000)+'s', sx+slotW/2, sy+slotH/2+2);
+        }
+      } else {
+        ctx.font='12px sans-serif'; ctx.fillStyle='rgba(120,120,120,0.7)';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(i===0?'Q':'E', sx+slotW/2, sy+slotH/2-6);
+        ctx.font='10px sans-serif'; ctx.fillStyle='rgba(100,100,100,0.5)';
+        ctx.textBaseline='bottom';
+        ctx.fillText('未裝備', sx+slotW/2, sy+slotH-4);
+      }
+      ctx.restore();
+    }
+  }
 }
 
 // ── 手機面板輔助函數 ─────────────────────────────────────
@@ -2216,6 +2354,8 @@ document.addEventListener('keydown', e=>{
   if(e.key==='9') selectTower('training');
   if(e.key==='0') selectTower('lab');
   if(e.key==='Escape') selectedBuilding=null;
+  if((e.key==='q'||e.key==='Q')&&hero&&!gameOver){ e.preventDefault(); hero.castSkill(0,performance.now()); }
+  if((e.key==='e'||e.key==='E')&&hero&&!gameOver){ e.preventDefault(); hero.castSkill(1,performance.now()); }
   if(e.key==='Enter'&&!waveActive&&!gameOver&&towers.some(t=>TOWER_TYPES[t.type].isFortress)) nextWaveAt=performance.now();
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
 });

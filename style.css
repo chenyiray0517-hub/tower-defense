@@ -406,6 +406,71 @@ body {
   cursor: not-allowed;
 }
 
+/* ── 主動技能格子 ── */
+#active-skill-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 900px) { #active-skill-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px)  { #active-skill-grid { grid-template-columns: 1fr; } }
+
+.xp-active-hint {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: normal;
+  margin-left: 6px;
+}
+
+.xp-active-card {
+  background: linear-gradient(145deg, #0f1e35, #1a2e50);
+  border: 1px solid #1e5080;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.xp-active-card:hover {
+  border-color: #f59e0b;
+  box-shadow: 0 0 12px rgba(245,158,11,0.2);
+}
+.xp-active-card.xp-card-owned {
+  border-color: rgba(46,204,113,0.4);
+  opacity: 0.9;
+}
+
+.xp-cd-label {
+  font-size: 11px;
+  color: #60a5fa;
+}
+
+.xp-slot-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.xp-equip-btn {
+  flex: 1;
+  background: linear-gradient(135deg, #1e3a5f, #2d5a8a);
+  color: #93c5fd;
+  border: 1px solid #2d6a9a;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.xp-equip-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.xp-equip-btn.xp-equip-on {
+  background: linear-gradient(135deg, #14532d, #16a34a);
+  color: #86efac;
+  border-color: #22c55e;
+}
+
 /* ── XP 重設按鈕 ── */
 #xp-reset-row {
   margin-top: 20px;

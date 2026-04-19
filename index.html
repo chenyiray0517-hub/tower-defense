@@ -152,6 +152,9 @@
     <div class="xp-section-title">🌟 特殊技能</div>
     <div id="skill-grid"></div>
 
+    <div class="xp-section-title">⚡ 主動技能 <span class="xp-active-hint">（裝備2個，遊戲中 Q / E 施放）</span></div>
+    <div id="active-skill-grid"></div>
+
     <div id="xp-reset-row">
       <button id="xp-reset-btn" onclick="resetSkills()">🔄 重設技能點（全額返還 XP）</button>
     </div>
@@ -774,6 +777,38 @@
             : `<button class="xp-buy-btn${canBuy ? '' : ' xp-buy-disabled'}" onclick="buySkill('${sk.id}')">${sk.cost} XP 解鎖</button>`
           }`;
         skGrid.appendChild(card);
+      }
+
+      // 主動技能
+      const asGrid = document.getElementById('active-skill-grid');
+      asGrid.innerHTML = '';
+      const slots = d.activeSlots || [null, null];
+      for (const sk of ACTIVE_SKILL_DEFS) {
+        const owned = d.activeSkills.includes(sk.id);
+        const canBuy = !owned && d.xp >= sk.cost;
+        const inSlot0 = slots[0] === sk.id;
+        const inSlot1 = slots[1] === sk.id;
+        const card = document.createElement('div');
+        card.className = 'xp-active-card' + (owned ? ' xp-card-owned' : '');
+        let slotHtml = '';
+        if (owned) {
+          const s0 = inSlot0
+            ? `<button class="xp-equip-btn xp-equip-on" onclick="unequipActiveSkill(0)">✅ Q槽（點擊卸下）</button>`
+            : `<button class="xp-equip-btn${slots[0]?'':''}" onclick="equipActiveSkill('${sk.id}',0)">裝備 [Q]</button>`;
+          const s1 = inSlot1
+            ? `<button class="xp-equip-btn xp-equip-on" onclick="unequipActiveSkill(1)">✅ E槽（點擊卸下）</button>`
+            : `<button class="xp-equip-btn" onclick="equipActiveSkill('${sk.id}',1)">裝備 [E]</button>`;
+          slotHtml = `<div class="xp-slot-btns">${s0}${s1}</div>`;
+        }
+        card.innerHTML = `
+          <div class="xp-card-name">${sk.name}</div>
+          <div class="xp-card-desc">${sk.desc}</div>
+          <div class="xp-cd-label">⏱ 冷卻：${sk.cooldown/1000}s</div>
+          ${owned
+            ? slotHtml
+            : `<button class="xp-buy-btn${canBuy ? '' : ' xp-buy-disabled'}" onclick="buyActiveSkill('${sk.id}')">${sk.cost} XP 解鎖</button>`
+          }`;
+        asGrid.appendChild(card);
       }
     }
 
