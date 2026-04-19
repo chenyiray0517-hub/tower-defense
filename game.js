@@ -1514,8 +1514,9 @@ class Bullet {
       if(e.hp<=0) e.tryKill(getKillBonus());
     };
     if(this.splash){
+      applyHit(this.target); // 主目標一定受傷（含幽靈兵）
       for(const e of enemies){
-        if(e.dead||e.ghost) continue; // 幽靈兵免疫範圍傷害
+        if(e.dead||e.ghost||e===this.target) continue; // 範圍傷害跳過幽靈兵與主目標
         const dx=e.x-this.target.x, dy=e.y-this.target.y;
         if(Math.sqrt(dx*dx+dy*dy)<=this.splashRadius) applyHit(e);
       }
