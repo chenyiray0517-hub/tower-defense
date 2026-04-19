@@ -169,6 +169,11 @@
     <div class="xp-section-title">⚡ 主動技能 <span class="xp-active-hint">（裝備3個，遊戲中 Q / E / R 施放）</span></div>
     <div id="active-skill-grid"></div>
 
+    <div class="xp-section-title">🎽 裝備系統</div>
+    <div id="gear-equipped-bar"></div>
+    <div id="gear-slot-tabs"></div>
+    <div id="gear-item-grid"></div>
+
     <div id="xp-reset-row">
       <button id="xp-reset-btn" onclick="resetSkills()">🔄 重設技能點（全額返還 XP）</button>
     </div>
@@ -841,7 +846,79 @@
           }`;
         asGrid.appendChild(card);
       }
+
+      // ── 裝備系統渲染 ─────────────────────────────────────
+      const gearEquipped = d.equippedGear || {head:null,chest:null,legs:null,boots:null};
+
+      // 已裝備一覽列
+      const equippedBar = document.getElementById('gear-equipped-bar');
+      equippedBar.innerHTML = GEAR_SLOTS.map(s => {
+        const id = gearEquipped[s.id];
+        const item = id ? EQUIPMENT_DEFS.find(e=>e.id===id) : null;
+        const ri = item ? RARITY_INFO[item.rarity] : null;
+        return `<div class="gear-equipped-slot">
+          <span class="gear-slot-label">${s.icon} ${s.name}</span>
+          <span style="${ri?`color:${ri.color}`:'color:#444'}">${item?`${item.icon} ${item.name}`:'— 未裝備'}</span>
+          ${item?`<button class="gear-unequip-btn" onclick="unequipGear('${s.id}')">✕</button>`:''}
+        </div>`;
+      }).join('');
+
+      // 部位 Tab
+      const tabsEl = document.getElementById('gear-slot-tabs');
+      tabsEl.innerHTML = GEAR_SLOTS.map(s =>
+        `<button class="gear-slot-tab${_gearTab===s.id?' gear-tab-active':''}" onclick="switchGearTab('${s.id}')">${s.icon} ${s.name}</button>`
+      ).join('');
+
+      // 裝備格
+      const gearGrid = document.getElementById('gear-item-grid');
+      gearGrid.innerHTML = '';
+      const rarityOrder = {common:0,rare:1,epic:2,legendary:3,mythic:4};
+      const slotItems = EQUIPMENT_DEFS.filter(e=>e.slot===_gearTab)
+        .sort((a,b)=>rarityOrder[a.rarity]-rarityOrder[b.rarity]);
+      for(const item of slotItems){
+        const ri = RARITY_INFO[item.rarity];
+        const owned = d.equipment.includes(item.id);
+        const isEquipped = gearEquipped[item.slot] === item.id;
+        const canBuy = !owned && d.xp >= ri.cost;
+        const card = document.createElement('div');
+        card.className = `gear-item-card gear-rarity-${item.rarity}${isEquipped?' gear-equipped':''}`;
+        let btnHtml = '';
+        if(!owned){
+          btnHtml = `<button class="gear-buy-btn${canBuy?'':' gear-buy-disabled'}" onclick="buyEquipment('${item.id}')">${ri.cost} XP 購買</button>`;
+        } else if(isEquipped){
+          btnHtml = `<button class="gear-equip-btn gear-equip-on" onclick="unequipGear('${item.slot}')">✅ 已裝備</button>`;
+        } else {
+          btnHtml = `<button class="gear-equip-btn" onclick="equipGear('${item.id}')">裝備</button>`;
+        }
+        card.innerHTML = `
+          <div class="gear-item-header">
+            <span class="gear-item-icon">${item.icon}</span>
+            <span class="gear-item-name">${item.name}</span>
+            <span class="gear-rarity-badge" style="background:${ri.bg};color:${ri.color}">${ri.name}</span>
+          </div>
+          <div class="gear-item-stats">${fmtGearStats(item.stats)}</div>
+          <div class="gear-item-btns">${btnHtml}</div>`;
+        gearGrid.appendChild(card);
+      }
     }
+
+    // ── 裝備輔助 ──────────────────────────────────────────
+    let _gearTab = 'head';
+    function switchGearTab(slot){ _gearTab=slot; _refreshXPPanelImpl(); }
+    function fmtGearStats(stats){
+      const p=[];
+      if(stats.hp)       p.push(`HP +${Math.round(stats.hp*100)}%`);
+      if(stats.damage)   p.push(`攻擊 +${Math.round(stats.damage*100)}%`);
+      if(stats.atkSpeed) p.push(`攻速 +${Math.round(stats.atkSpeed*100)}%`);
+      if(stats.speed)    p.push(`移速 +${Math.round(stats.speed*100)}%`);
+      return p.join('　');
+    }
+    const GEAR_SLOTS=[
+      {id:'head', name:'頭部', icon:'🪖'},
+      {id:'chest',name:'胸甲', icon:'🛡️'},
+      {id:'legs', name:'腿甲', icon:'🦵'},
+      {id:'boots',name:'鞋子', icon:'👟'},
+    ];
 
     // 頁面載入後渲染 XP 面板
     if (document.readyState === 'loading') {

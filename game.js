@@ -657,6 +657,118 @@ window.UPGRADE_DEFS      = UPGRADE_DEFS;
 window.SKILL_DEFS        = SKILL_DEFS;
 window.ACTIVE_SKILL_DEFS = ACTIVE_SKILL_DEFS;
 
+// ── 裝備系統 ─────────────────────────────────────────────
+const RARITY_INFO = {
+  common:    {name:'普通', color:'#9e9e9e', bg:'rgba(158,158,158,0.14)', cost:200 },
+  rare:      {name:'稀有', color:'#42a5f5', bg:'rgba(33,150,243,0.18)',  cost:450 },
+  epic:      {name:'高級', color:'#ce93d8', bg:'rgba(156,39,176,0.18)',  cost:800 },
+  legendary: {name:'傳奇', color:'#ffb74d', bg:'rgba(255,152,0,0.20)',   cost:1400},
+  mythic:    {name:'神話', color:'#ff5252', bg:'rgba(244,67,54,0.20)',   cost:2500},
+};
+const EQUIPMENT_DEFS = [
+  // ── 頭部 ──
+  {id:'h_c1',slot:'head', rarity:'common',    icon:'🪖',name:'皮革頭盔', stats:{hp:0.05}},
+  {id:'h_c2',slot:'head', rarity:'common',    icon:'🎩',name:'布帽',     stats:{damage:0.05}},
+  {id:'h_c3',slot:'head', rarity:'common',    icon:'⛑️',name:'銅頭盔',   stats:{hp:0.04,atkSpeed:0.04}},
+  {id:'h_c4',slot:'head', rarity:'common',    icon:'🧢',name:'獵人帽',   stats:{speed:0.06}},
+  {id:'h_c5',slot:'head', rarity:'common',    icon:'🪖',name:'新兵鋼盔', stats:{hp:0.06,damage:0.02}},
+  {id:'h_r1',slot:'head', rarity:'rare',      icon:'⚔️',name:'鐵製戰盔', stats:{hp:0.12,damage:0.05}},
+  {id:'h_r2',slot:'head', rarity:'rare',      icon:'🏹',name:'遊俠頭環', stats:{atkSpeed:0.14,damage:0.05}},
+  {id:'h_r3',slot:'head', rarity:'rare',      icon:'👑',name:'精靈銀冠', stats:{damage:0.12,speed:0.08}},
+  {id:'h_r4',slot:'head', rarity:'rare',      icon:'🛡️',name:'騎士頭盔', stats:{hp:0.15,speed:0.05}},
+  {id:'h_e1',slot:'head', rarity:'epic',      icon:'🐉',name:'龍鱗冠',   stats:{hp:0.20,damage:0.12}},
+  {id:'h_e2',slot:'head', rarity:'epic',      icon:'🌑',name:'暗影兜帽', stats:{atkSpeed:0.20,damage:0.15}},
+  {id:'h_e3',slot:'head', rarity:'epic',      icon:'🔷',name:'秘銀戰盔', stats:{hp:0.25,atkSpeed:0.10}},
+  {id:'h_l1',slot:'head', rarity:'legendary', icon:'✨',name:'黃金王冠', stats:{hp:0.30,damage:0.18,atkSpeed:0.12}},
+  {id:'h_l2',slot:'head', rarity:'legendary', icon:'😈',name:'惡魔角盔', stats:{damage:0.35,atkSpeed:0.20,speed:0.10}},
+  {id:'h_m1',slot:'head', rarity:'mythic',    icon:'🌟',name:'天神戰冠', stats:{hp:0.40,damage:0.25,atkSpeed:0.15,speed:0.10}},
+  // ── 胸甲 ──
+  {id:'c_c1',slot:'chest',rarity:'common',    icon:'🦺',name:'皮革胸甲', stats:{hp:0.06}},
+  {id:'c_c2',slot:'chest',rarity:'common',    icon:'👕',name:'布甲',     stats:{damage:0.05}},
+  {id:'c_c3',slot:'chest',rarity:'common',    icon:'🛡️',name:'銅胸甲',   stats:{hp:0.05,atkSpeed:0.03}},
+  {id:'c_c4',slot:'chest',rarity:'common',    icon:'🧥',name:'旅者外衣', stats:{speed:0.05,hp:0.03}},
+  {id:'c_c5',slot:'chest',rarity:'common',    icon:'🛡️',name:'新兵鐵甲', stats:{hp:0.08}},
+  {id:'c_r1',slot:'chest',rarity:'rare',      icon:'🛡️',name:'騎士胸甲', stats:{hp:0.14,damage:0.06}},
+  {id:'c_r2',slot:'chest',rarity:'rare',      icon:'🐍',name:'刺客皮甲', stats:{damage:0.13,speed:0.07}},
+  {id:'c_r3',slot:'chest',rarity:'rare',      icon:'🔮',name:'法師長袍', stats:{atkSpeed:0.12,damage:0.08}},
+  {id:'c_r4',slot:'chest',rarity:'rare',      icon:'⚙️',name:'精鋼胸甲', stats:{hp:0.18}},
+  {id:'c_e1',slot:'chest',rarity:'epic',      icon:'🐉',name:'龍鱗胸甲', stats:{hp:0.22,damage:0.14}},
+  {id:'c_e2',slot:'chest',rarity:'epic',      icon:'🌑',name:'暗影護甲', stats:{damage:0.18,atkSpeed:0.15}},
+  {id:'c_e3',slot:'chest',rarity:'epic',      icon:'💎',name:'秘銀鎧甲', stats:{hp:0.28,speed:0.08}},
+  {id:'c_l1',slot:'chest',rarity:'legendary', icon:'☀️',name:'聖光胸甲', stats:{hp:0.35,damage:0.20,atkSpeed:0.10}},
+  {id:'c_l2',slot:'chest',rarity:'legendary', icon:'🌑',name:'深淵鎧甲', stats:{damage:0.30,atkSpeed:0.22,hp:0.15}},
+  {id:'c_m1',slot:'chest',rarity:'mythic',    icon:'🌟',name:'神界鎧甲', stats:{hp:0.45,damage:0.20,atkSpeed:0.12,speed:0.08}},
+  // ── 腿甲 ──
+  {id:'l_c1',slot:'legs', rarity:'common',    icon:'👖',name:'皮革腿甲', stats:{hp:0.04,speed:0.03}},
+  {id:'l_c2',slot:'legs', rarity:'common',    icon:'👖',name:'布褲',     stats:{damage:0.04,speed:0.03}},
+  {id:'l_c3',slot:'legs', rarity:'common',    icon:'🦵',name:'銅腿甲',   stats:{hp:0.06}},
+  {id:'l_c4',slot:'legs', rarity:'common',    icon:'💨',name:'輕甲護腿', stats:{speed:0.07}},
+  {id:'l_c5',slot:'legs', rarity:'common',    icon:'🦵',name:'新兵腿甲', stats:{hp:0.05,atkSpeed:0.03}},
+  {id:'l_r1',slot:'legs', rarity:'rare',      icon:'⚔️',name:'騎士腿甲', stats:{hp:0.12,speed:0.08}},
+  {id:'l_r2',slot:'legs', rarity:'rare',      icon:'🐍',name:'刺客護腿', stats:{damage:0.10,speed:0.12}},
+  {id:'l_r3',slot:'legs', rarity:'rare',      icon:'🔩',name:'強化腿甲', stats:{hp:0.16,atkSpeed:0.06}},
+  {id:'l_r4',slot:'legs', rarity:'rare',      icon:'🌪️',name:'疾風護膝', stats:{speed:0.16}},
+  {id:'l_e1',slot:'legs', rarity:'epic',      icon:'🐉',name:'龍鱗腿甲', stats:{hp:0.20,speed:0.12}},
+  {id:'l_e2',slot:'legs', rarity:'epic',      icon:'🌑',name:'暗影護腿', stats:{damage:0.15,speed:0.18}},
+  {id:'l_e3',slot:'legs', rarity:'epic',      icon:'💎',name:'秘銀腿甲', stats:{hp:0.25,damage:0.10}},
+  {id:'l_l1',slot:'legs', rarity:'legendary', icon:'⚡',name:'雷神護腿', stats:{speed:0.25,damage:0.18,atkSpeed:0.15}},
+  {id:'l_l2',slot:'legs', rarity:'legendary', icon:'🛡️',name:'聖騎腿甲', stats:{hp:0.32,speed:0.18,damage:0.12}},
+  {id:'l_m1',slot:'legs', rarity:'mythic',    icon:'🌟',name:'神話步伐', stats:{speed:0.35,hp:0.30,damage:0.15,atkSpeed:0.10}},
+  // ── 鞋子 ──
+  {id:'b_c1',slot:'boots',rarity:'common',    icon:'👟',name:'皮靴',     stats:{speed:0.05}},
+  {id:'b_c2',slot:'boots',rarity:'common',    icon:'👟',name:'布鞋',     stats:{speed:0.04,hp:0.03}},
+  {id:'b_c3',slot:'boots',rarity:'common',    icon:'👞',name:'銅靴',     stats:{speed:0.04,atkSpeed:0.03}},
+  {id:'b_c4',slot:'boots',rarity:'common',    icon:'👟',name:'旅者靴',   stats:{speed:0.07}},
+  {id:'b_c5',slot:'boots',rarity:'common',    icon:'👢',name:'戰靴',     stats:{speed:0.05,damage:0.03}},
+  {id:'b_r1',slot:'boots',rarity:'rare',      icon:'👢',name:'騎士靴',   stats:{speed:0.12,hp:0.08}},
+  {id:'b_r2',slot:'boots',rarity:'rare',      icon:'💨',name:'疾風靴',   stats:{speed:0.16}},
+  {id:'b_r3',slot:'boots',rarity:'rare',      icon:'🌑',name:'刺客靴',   stats:{speed:0.12,damage:0.08}},
+  {id:'b_r4',slot:'boots',rarity:'rare',      icon:'🔮',name:'魔法靴',   stats:{speed:0.10,atkSpeed:0.10}},
+  {id:'b_e1',slot:'boots',rarity:'epic',      icon:'🦴',name:'龍骨靴',   stats:{speed:0.20,hp:0.14}},
+  {id:'b_e2',slot:'boots',rarity:'epic',      icon:'🌑',name:'暗影靴',   stats:{speed:0.22,damage:0.12}},
+  {id:'b_e3',slot:'boots',rarity:'epic',      icon:'🌪️',name:'風神靴',   stats:{speed:0.25,atkSpeed:0.12}},
+  {id:'b_l1',slot:'boots',rarity:'legendary', icon:'⚡',name:'閃電之靴', stats:{speed:0.30,atkSpeed:0.20,damage:0.10}},
+  {id:'b_l2',slot:'boots',rarity:'legendary', icon:'✨',name:'聖者步履', stats:{speed:0.28,hp:0.22,damage:0.12}},
+  {id:'b_m1',slot:'boots',rarity:'mythic',    icon:'🌟',name:'神話疾風靴',stats:{speed:0.40,atkSpeed:0.20,damage:0.15,hp:0.15}},
+];
+window.RARITY_INFO     = RARITY_INFO;
+window.EQUIPMENT_DEFS  = EQUIPMENT_DEFS;
+
+function getEquipmentBonuses(){
+  const d=loadPlayerData();
+  const gear=d.equippedGear||{};
+  let hp=0,damage=0,atkSpeed=0,speed=0;
+  for(const slot of ['head','chest','legs','boots']){
+    const id=gear[slot]; if(!id) continue;
+    const item=EQUIPMENT_DEFS.find(e=>e.id===id); if(!item) continue;
+    hp+=item.stats.hp||0; damage+=item.stats.damage||0;
+    atkSpeed+=item.stats.atkSpeed||0; speed+=item.stats.speed||0;
+  }
+  return {hp,damage,atkSpeed,speed};
+}
+window.getEquipmentBonuses=getEquipmentBonuses;
+
+function buyEquipment(id){
+  const d=loadPlayerData();
+  const item=EQUIPMENT_DEFS.find(e=>e.id===id); if(!item) return;
+  if(d.equipment.includes(id)){alert('已擁有！');return;}
+  const cost=RARITY_INFO[item.rarity].cost;
+  if(d.xp<cost){alert(`經驗值不足！需要 ${cost} XP，目前 ${d.xp} XP`);return;}
+  d.xp-=cost; d.equipment.push(id); savePlayerData(d); refreshXPPanel();
+}
+function equipGear(id){
+  const d=loadPlayerData();
+  const item=EQUIPMENT_DEFS.find(e=>e.id===id); if(!item||!d.equipment.includes(id)) return;
+  d.equippedGear[item.slot]=id; savePlayerData(d); refreshXPPanel();
+}
+function unequipGear(slot){
+  const d=loadPlayerData();
+  d.equippedGear[slot]=null; savePlayerData(d); refreshXPPanel();
+}
+window.buyEquipment=buyEquipment;
+window.equipGear=equipGear;
+window.unequipGear=unequipGear;
+
 function loadPlayerData(){
   try{
     const d=JSON.parse(localStorage.getItem(PLAYER_KEY)||'{}');
@@ -667,8 +779,10 @@ function loadPlayerData(){
       equippedSkills:Array.isArray(d.equippedSkills)?d.equippedSkills.slice(0,7):[],
       activeSkills:Array.isArray(d.activeSkills)?d.activeSkills:[],
       activeSlots:Array.isArray(d.activeSlots)?d.activeSlots.slice(0,3).concat([null,null,null]).slice(0,3):[null,null,null],
+      equipment:Array.isArray(d.equipment)?d.equipment:[],
+      equippedGear:{head:d.equippedGear?.head||null,chest:d.equippedGear?.chest||null,legs:d.equippedGear?.legs||null,boots:d.equippedGear?.boots||null},
     };
-  }catch(e){return {xp:0,upgrades:{hp:0,damage:0,atkSpeed:0,speed:0},skills:[],equippedSkills:[],activeSkills:[],activeSlots:[null,null,null]};}
+  }catch(e){return {xp:0,upgrades:{hp:0,damage:0,atkSpeed:0,speed:0},skills:[],equippedSkills:[],activeSkills:[],activeSlots:[null,null,null],equipment:[],equippedGear:{head:null,chest:null,legs:null,boots:null}};}
 }
 function savePlayerData(d){localStorage.setItem(PLAYER_KEY,JSON.stringify(d));}
 // 安靜地加XP（不打斷遊戲訊息）；返回新總量
@@ -729,6 +843,10 @@ function resetSkills(){
     if(d.activeSkills.includes(sk.id)) d.xp+=sk.cost;
   }
   d.activeSkills=[]; d.activeSlots=[null,null,null];
+  for(const item of EQUIPMENT_DEFS){
+    if(d.equipment.includes(item.id)) d.xp+=RARITY_INFO[item.rarity].cost;
+  }
+  d.equipment=[]; d.equippedGear={head:null,chest:null,legs:null,boots:null};
   savePlayerData(d);
   refreshXPPanel();
 }
@@ -837,11 +955,12 @@ class Hero {
   applyResearch(){
     const wasAtFull=this.hp>=this.maxHp;
     const upg=loadPlayerData().upgrades;
-    this.maxHp=Math.floor(260*(1+upg.hp*0.15)*(researchDone.has('heroHp')?1.25:1));
+    const eq=getEquipmentBonuses();
+    this.maxHp=Math.floor(260*(1+upg.hp*0.15)*(researchDone.has('heroHp')?1.25:1)*(1+eq.hp));
     this.hp=wasAtFull?this.maxHp:Math.min(this.hp,this.maxHp);
-    this.damage=Math.floor(40*(1+upg.damage*0.15)*(researchDone.has('heroDmg')?1.25:1));
-    this.attackRate=Math.floor(620/(1+upg.atkSpeed*0.10)*(researchDone.has('heroAtk')?0.8:1));
-    this.speed=3.3*(1+upg.speed*0.10)*(researchDone.has('heroSpd')?1.2:1);
+    this.damage=Math.floor(40*(1+upg.damage*0.15)*(researchDone.has('heroDmg')?1.25:1)*(1+eq.damage));
+    this.attackRate=Math.floor(620/(1+upg.atkSpeed*0.10)*(researchDone.has('heroAtk')?0.8:1)/(1+eq.atkSpeed));
+    this.speed=3.3*(1+upg.speed*0.10)*(researchDone.has('heroSpd')?1.2:1)*(1+eq.speed);
   }
   takeDamage(dmg, now){
     if(now<this.invincible) return;
