@@ -748,10 +748,25 @@ function getEquipmentBonuses(){
 }
 window.getEquipmentBonuses=getEquipmentBonuses;
 
+const RARITY_ORDER=['common','rare','epic','legendary','mythic'];
+function getReqRarity(rarity){ const i=RARITY_ORDER.indexOf(rarity); return i>0?RARITY_ORDER[i-1]:null; }
+// 檢查某部位是否已擁有指定稀有度的裝備
+function hasRarityInSlot(owned,slot,rarity){
+  return EQUIPMENT_DEFS.some(e=>e.slot===slot&&e.rarity===rarity&&owned.includes(e.id));
+}
+window.RARITY_ORDER=RARITY_ORDER;
+window.hasRarityInSlot=hasRarityInSlot;
+
 function buyEquipment(id){
   const d=loadPlayerData();
   const item=EQUIPMENT_DEFS.find(e=>e.id===id); if(!item) return;
   if(d.equipment.includes(id)){alert('已擁有！');return;}
+  // 前置稀有度檢查
+  const reqRarity=getReqRarity(item.rarity);
+  if(reqRarity&&!hasRarityInSlot(d.equipment,item.slot,reqRarity)){
+    const reqName=RARITY_INFO[reqRarity].name;
+    alert(`需要先擁有同部位的「${reqName}」裝備才能購買！`);return;
+  }
   const cost=RARITY_INFO[item.rarity].cost;
   if(d.xp<cost){alert(`經驗值不足！需要 ${cost} XP，目前 ${d.xp} XP`);return;}
   d.xp-=cost; d.equipment.push(id); savePlayerData(d); refreshXPPanel();

@@ -881,10 +881,17 @@
         const isEquipped = gearEquipped[item.slot] === item.id;
         const canBuy = !owned && d.xp >= ri.cost;
         const card = document.createElement('div');
-        card.className = `gear-item-card gear-rarity-${item.rarity}${isEquipped?' gear-equipped':''}`;
+        card.className = `gear-item-card gear-rarity-${item.rarity}${isEquipped?' gear-equipped':''}${(!owned&&!prereqMet)?' gear-locked':''}`;
+        const reqRarity = RARITY_ORDER[RARITY_ORDER.indexOf(item.rarity)-1] || null;
+        const prereqMet = !reqRarity || hasRarityInSlot(d.equipment, item.slot, reqRarity);
+        const reqRarityName = reqRarity ? RARITY_INFO[reqRarity].name : null;
         let btnHtml = '';
         if(!owned){
-          btnHtml = `<button class="gear-buy-btn${canBuy?'':' gear-buy-disabled'}" onclick="buyEquipment('${item.id}')">${ri.cost} XP 購買</button>`;
+          if(!prereqMet){
+            btnHtml = `<button class="gear-buy-btn gear-buy-disabled" disabled>🔒 需先擁有${reqRarityName}</button>`;
+          } else {
+            btnHtml = `<button class="gear-buy-btn${canBuy?'':' gear-buy-disabled'}" onclick="buyEquipment('${item.id}')">${ri.cost} XP 購買</button>`;
+          }
         } else if(isEquipped){
           btnHtml = `<button class="gear-equip-btn gear-equip-on" onclick="unequipGear('${item.slot}')">✅ 已裝備</button>`;
         } else {

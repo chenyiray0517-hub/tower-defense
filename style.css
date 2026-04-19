@@ -1142,6 +1142,7 @@ h1 {
   box-shadow: 0 0 10px rgba(244,67,54,0.2); }
 
 .gear-equipped { box-shadow: 0 0 14px rgba(46,204,113,0.35) !important; }
+.gear-locked { opacity: 0.45; filter: grayscale(0.6); }
 
 .gear-item-header {
   display: flex;
