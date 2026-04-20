@@ -1962,7 +1962,8 @@ function updateSpawn(now){
     // 顯示波次結算
     const isBossWave=wave===10||wave===20;
     // 計算並發放本波 XP
-    const waveXP=30+wave*4+(isBossWave?80:0);
+    const lvMult=currentLevel===99?2:currentLevel===50?2.5:currentLevel>=7?1.8:currentLevel>=5?1.5:currentLevel>=3?1.2:1;
+    const waveXP=Math.round((30+wave*4+(isBossWave?80:0))*lvMult);
     addXPSilent(waveXP);
     waveSummary={kills:waveKills,gold:waveGoldEarned,dmg:Math.floor(waveDmgTaken),waveNum:wave,isBossWave,xp:waveXP};
     waveSummaryExpire=performance.now()+4000;
