@@ -595,7 +595,7 @@ function getSellValue(tower){
 }
 
 // ── 遊戲狀態 ─────────────────────────────────────────────
-let towers=[], enemies=[], bullets=[];
+let towers=[], enemies=[], bullets=[], particles=[];
 let gold=300, wave=0, gameOver=false, WAVES=[], hero=null;
 let heroLives=-1; // -1=無限；>=0 為剩餘命數（特殊模式）
 let selectedTowerType='archer', selectedBuilding=null;
@@ -1033,7 +1033,7 @@ function showMessage(t,d=2000){ messageText=t; messageExpire=performance.now()+d
 // ── 初始化 ────────────────────────────────────────────────
 function initGame(levelNum) {
   researchDone=new Set();           // 必須在 hero = new Hero() 之前清空
-  towers=[]; enemies=[]; bullets=[]; friendlyUnits=[]; selectedUnits=[];
+  towers=[]; enemies=[]; bullets=[]; particles=[]; friendlyUnits=[]; selectedUnits=[];
   const _pdat=loadPlayerData();
   heroLives = (levelNum===99) ? 3 : -1;
   gold = levelNum===99 ? 0 : (levelNum===50?600:300)+(_pdat.equippedSkills.includes('richStart')?100:0);
@@ -1200,18 +1200,21 @@ class Hero {
           if(d<=r){ e.hp-=this.damage*3; e.hitFlash=now+300; hit++; if(e.hp<=0) e.tryKill(getKillBonus()); }
         }
         showMessage(`🌀 旋風斬！擊中 ${hit} 個敵人`,1500); SFX.heroShoot?.();
+        spawnSkillVFX('whirlwind',this.x,this.y);
         break;
       }
       case 'blizzard':{
         const until=now+4000;
         for(const e of enemies){ if(!e.dead) e.slowUntil=Math.max(e.slowUntil,until); }
         showMessage('❄️ 極凍術！全場敵人減速',1500);
+        spawnSkillVFX('blizzard',this.x,this.y);
         break;
       }
       case 'heal':{
         const restored=Math.floor(this.maxHp*0.4);
         this.hp=Math.min(this.maxHp,this.hp+restored);
         showMessage(`💊 戰地回春！回復 ${restored} HP`,1500);
+        spawnSkillVFX('heal',this.x,this.y);
         break;
       }
       case 'thunderStrike':{
@@ -1219,6 +1222,7 @@ class Hero {
         for(const t of targets)
           bullets.push(new Bullet(this.x,this.y,t,this.damage*4,'#f1c40f',10,false,0));
         showMessage(`⚡ 天降雷霆！${targets.length} 道閃電`,1500); SFX.heroShoot?.();
+        spawnSkillVFX('thunderStrike',this.x,this.y,targets);
         break;
       }
       case 'dash':{
@@ -1229,16 +1233,19 @@ class Hero {
         if(keys['d']||keys['D']||keys['ArrowRight']) dx=1;
         if(dx===0&&dy===0) dy=-1; // 無方向時預設向上
         const mag=Math.sqrt(dx*dx+dy*dy);
+        const oldX=this.x, oldY=this.y;
         this.x=Math.max(this.size,Math.min(COLS*CELL_SIZE-this.size,this.x+dx/mag*4*CELL_SIZE));
         this.y=Math.max(this.size,Math.min(ROWS*CELL_SIZE-this.size,this.y+dy/mag*4*CELL_SIZE));
         this.invincible=now+500;
         showMessage('💨 疾風衝刺！',1000);
+        spawnSkillVFX('dash',oldX,oldY);
         break;
       }
       case 'shieldBarrier':{
         this.shield=(this.shield||0)+Math.floor(this.maxHp*1.5);
         this.shieldUntil=now+8000;
         showMessage(`🛡️ 護盾障壁！吸收 ${Math.floor(this.maxHp*1.5)} 傷害`,1500);
+        spawnSkillVFX('shieldBarrier',this.x,this.y);
         break;
       }
       case 'plagueCloud':{
@@ -1251,6 +1258,7 @@ class Hero {
           hit++;
         }
         showMessage(`☣️ 瘟疫雲霧！感染 ${hit} 個敵人`,1500);
+        spawnSkillVFX('plagueCloud',this.x,this.y);
         break;
       }
     }
@@ -1288,6 +1296,220 @@ class Hero {
     ctx.font='bold 9px sans-serif'; ctx.fillStyle='#00e5ff';
     ctx.textAlign='center'; ctx.textBaseline='bottom';
     ctx.fillText('主角',sx,by-1);
+  }
+}
+
+// ── 粒子系統 ──────────────────────────────────────────────
+class Particle {
+  constructor(x, y, opts={}){
+    this.x=x; this.y=y;
+    this.vx=opts.vx||0; this.vy=opts.vy||0;
+    this.life=opts.life||800;         // ms
+    this.maxLife=this.life;
+    this.size=opts.size||6;
+    this.color=opts.color||'#ffffff';
+    this.alpha=opts.alpha||1;
+    this.gravity=opts.gravity||0;
+    this.shrink=opts.shrink!==undefined?opts.shrink:true;
+    this.shape=opts.shape||'circle';   // 'circle' | 'ring' | 'text'
+    this.text=opts.text||'';
+    this.born=performance.now();
+  }
+  get done(){ return performance.now()-this.born>=this.maxLife; }
+  update(){
+    const dt=16;
+    this.x+=this.vx*(dt/16);
+    this.y+=this.vy*(dt/16);
+    this.vy+=this.gravity*(dt/16);
+  }
+  draw(){
+    const t=(performance.now()-this.born)/this.maxLife;
+    const a=this.alpha*(1-t);
+    const s=this.shrink?this.size*(1-t*0.5):this.size*(1+t);
+    const {x:sx,y:sy}=worldToScreen(this.x,this.y);
+    ctx.save();
+    ctx.globalAlpha=Math.max(0,a);
+    if(this.shape==='ring'){
+      ctx.beginPath(); ctx.arc(sx,sy,s,0,Math.PI*2);
+      ctx.strokeStyle=this.color; ctx.lineWidth=3;
+      ctx.shadowBlur=12; ctx.shadowColor=this.color;
+      ctx.stroke();
+    } else if(this.shape==='text'){
+      ctx.font=`${this.size}px serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(this.text,sx,sy);
+    } else {
+      ctx.beginPath(); ctx.arc(sx,sy,Math.max(0.5,s),0,Math.PI*2);
+      ctx.fillStyle=this.color;
+      ctx.shadowBlur=8; ctx.shadowColor=this.color;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+// 技能視覺特效
+function spawnSkillVFX(skillId, wx, wy, targets){
+  const now=performance.now();
+  switch(skillId){
+    case 'whirlwind':{
+      // 旋風斬：多圈旋轉斬擊弧線粒子
+      for(let ring=0;ring<3;ring++){
+        const r=(ring+1)*CELL_SIZE;
+        const count=12+ring*6;
+        for(let i=0;i<count;i++){
+          const angle=(i/count)*Math.PI*2;
+          const px=wx+Math.cos(angle)*r, py=wy+Math.sin(angle)*r;
+          particles.push(new Particle(px,py,{
+            vx:Math.cos(angle+Math.PI/2)*1.5,
+            vy:Math.sin(angle+Math.PI/2)*1.5,
+            life:400+ring*100,
+            size:5-ring,
+            color:`hsl(${30+ring*20},100%,70%)`,
+            shrink:true,
+          }));
+        }
+      }
+      // 中心爆炸環
+      particles.push(new Particle(wx,wy,{shape:'ring',size:10,life:500,color:'#ff9800',shrink:false,alpha:0.9}));
+      particles.push(new Particle(wx,wy,{shape:'ring',size:5, life:700,color:'#ffeb3b',shrink:false,alpha:0.7}));
+      break;
+    }
+    case 'blizzard':{
+      // 極凍術：全場冰晶/雪花向外飛散
+      const count=60;
+      for(let i=0;i<count;i++){
+        const angle=Math.random()*Math.PI*2;
+        const speed=1+Math.random()*3;
+        particles.push(new Particle(wx,wy,{
+          vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed,
+          life:1200+Math.random()*800,
+          size:3+Math.random()*5,
+          color:`hsl(${190+Math.random()*40},100%,${70+Math.random()*20}%)`,
+          shrink:true,
+        }));
+      }
+      // 擴散冰環
+      for(let i=0;i<4;i++){
+        particles.push(new Particle(wx,wy,{
+          shape:'ring',size:4+i*6,life:800+i*200,
+          color:'#80d8ff',shrink:false,alpha:0.7,
+        }));
+      }
+      // 每個敵人身上加凍結特效
+      for(const e of enemies){
+        if(e.dead) continue;
+        const {x:ex,y:ey}=worldToScreen(e.x,e.y);
+        particles.push(new Particle(e.x,e.y,{
+          shape:'ring',size:e.size*1.5,life:1000,color:'#b3e5fc',shrink:false,alpha:0.8,
+        }));
+      }
+      break;
+    }
+    case 'heal':{
+      // 戰地回春：綠色十字＋上升光點
+      for(let i=0;i<30;i++){
+        const angle=Math.random()*Math.PI*2;
+        const r=Math.random()*CELL_SIZE*0.8;
+        particles.push(new Particle(wx+Math.cos(angle)*r, wy+Math.sin(angle)*r,{
+          vx:(Math.random()-0.5)*0.5,
+          vy:-0.8-Math.random()*1.5,
+          life:900+Math.random()*600,
+          size:4+Math.random()*4,
+          color:`hsl(${120+Math.random()*30},100%,60%)`,
+          shrink:true, gravity:0,
+        }));
+      }
+      // ➕ 符號浮起
+      particles.push(new Particle(wx,wy-10,{
+        shape:'text',text:'➕',size:32,
+        vx:0,vy:-0.8,life:1000,shrink:false,alpha:1,
+      }));
+      particles.push(new Particle(wx,wy,{
+        shape:'ring',size:8,life:600,color:'#69f0ae',shrink:false,alpha:0.9,
+      }));
+      break;
+    }
+    case 'thunderStrike':{
+      // 天降雷霆：每個目標有落雷爆炸環
+      for(const t of (targets||[])){
+        const tx=t.x, ty=t.y;
+        particles.push(new Particle(tx,ty,{shape:'ring',size:6,life:400,color:'#f1c40f',shrink:false,alpha:1}));
+        particles.push(new Particle(tx,ty,{shape:'ring',size:12,life:600,color:'#fff176',shrink:false,alpha:0.7}));
+        for(let i=0;i<10;i++){
+          const angle=Math.random()*Math.PI*2;
+          particles.push(new Particle(tx,ty,{
+            vx:Math.cos(angle)*2.5,vy:Math.sin(angle)*2.5,
+            life:400+Math.random()*200,size:4,
+            color:'#ffee58',shrink:true,
+          }));
+        }
+      }
+      break;
+    }
+    case 'dash':{
+      // 疾風衝刺：殘影軌跡粒子
+      for(let i=0;i<20;i++){
+        const spread=CELL_SIZE*0.4;
+        particles.push(new Particle(
+          wx+(Math.random()-0.5)*spread,
+          wy+(Math.random()-0.5)*spread,{
+          vx:(Math.random()-0.5)*1,vy:(Math.random()-0.5)*1,
+          life:300+Math.random()*300,
+          size:6+Math.random()*6,
+          color:`hsl(${190+Math.random()*40},100%,70%)`,
+          shrink:true,alpha:0.8,
+        }));
+      }
+      // 衝刺方向箭頭環
+      particles.push(new Particle(wx,wy,{shape:'ring',size:14,life:400,color:'#00e5ff',shrink:false,alpha:0.9}));
+      break;
+    }
+    case 'shieldBarrier':{
+      // 護盾障壁：藍色多層閃光環 + 粒子
+      for(let i=0;i<5;i++){
+        particles.push(new Particle(wx,wy,{
+          shape:'ring',size:8+i*5,life:600+i*150,
+          color:`hsl(${200+i*8},100%,70%)`,shrink:false,alpha:0.8-i*0.1,
+        }));
+      }
+      for(let i=0;i<25;i++){
+        const angle=Math.random()*Math.PI*2;
+        const r=CELL_SIZE*(0.8+Math.random()*0.6);
+        particles.push(new Particle(wx+Math.cos(angle)*r,wy+Math.sin(angle)*r,{
+          vx:Math.cos(angle)*0.3,vy:Math.sin(angle)*0.3,
+          life:800+Math.random()*400,size:3+Math.random()*3,
+          color:'#82b1ff',shrink:true,
+        }));
+      }
+      break;
+    }
+    case 'plagueCloud':{
+      // 瘟疫雲霧：中心綠毒煙霧擴散
+      for(let i=0;i<50;i++){
+        const angle=Math.random()*Math.PI*2;
+        const speed=0.5+Math.random()*2;
+        particles.push(new Particle(wx,wy,{
+          vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,
+          life:1500+Math.random()*1000,
+          size:6+Math.random()*10,
+          color:`hsl(${90+Math.random()*40},80%,${35+Math.random()*20}%)`,
+          shrink:false,alpha:0.6,
+        }));
+      }
+      // 每個感染的敵人頭上放毒泡泡
+      for(const e of enemies){
+        if(e.dead) continue;
+        particles.push(new Particle(e.x,e.y,{
+          shape:'ring',size:e.size*1.4,life:800,color:'#76ff03',shrink:false,alpha:0.7,
+        }));
+        particles.push(new Particle(e.x,e.y-e.size,{
+          shape:'text',text:'☣️',size:16,
+          vx:0,vy:-0.5,life:1200,shrink:false,alpha:1,
+        }));
+      }
+      break;
+    }
   }
 }
 
@@ -2667,6 +2889,9 @@ function gameLoop(now){
   // 子彈
   bullets=bullets.filter(b=>!b.done);
   for(const b of bullets){b.update();b.draw();}
+  // 技能粒子特效
+  particles=particles.filter(p=>!p.done);
+  for(const p of particles){p.update();p.draw();}
   // ── 士兵指揮覆蓋層 ──
   drawUnitCommandOverlay(now);
   drawHUD();
