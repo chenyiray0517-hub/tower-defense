@@ -547,9 +547,9 @@ const TOWER_TYPES = {
 
 // ── 友方兵種 ──────────────────────────────────────────────
 const FRIENDLY_UNIT_TYPES = {
-  infantry: { name:'步兵',   emoji:'🗡️', hp:80,  speed:1.5, damage:18, attackRate:1200, range:1.5*CELL_SIZE, size:12, color:'#1e88e5' },
-  cavalry:  { name:'騎兵',   emoji:'🐴', hp:110, speed:2.8, damage:25, attackRate:900,  range:1.5*CELL_SIZE, size:12, color:'#00acc1' },
-  paladin:  { name:'聖騎士', emoji:'⚜️', hp:280, speed:0.9, damage:42, attackRate:1600, range:1.8*CELL_SIZE, size:16, color:'#f9a825' },
+  infantry: { name:'步兵',   emoji:'🗡️', hp:80,  speed:1.5, damage:18, attackRate:1200, range:1.5*CELL_SIZE, size:12, color:'#1e88e5', cost:20  },
+  cavalry:  { name:'騎兵',   emoji:'🐴', hp:110, speed:2.8, damage:25, attackRate:900,  range:1.5*CELL_SIZE, size:12, color:'#00acc1', cost:40  },
+  paladin:  { name:'聖騎士', emoji:'⚜️', hp:280, speed:0.9, damage:42, attackRate:1600, range:1.8*CELL_SIZE, size:16, color:'#f9a825', cost:100 },
 };
 
 const RESEARCH_ITEMS = [
@@ -669,7 +669,13 @@ const ACHIEVEMENT_DEFS = [
   { id:'gearFull',  name:'全副武裝',   icon:'🎽', desc:'同時裝備四個部位的裝備',            xp:150 },
   { id:'mythicOwn', name:'神話之力',   icon:'✨', desc:'擁有神話稀有度裝備',               xp:200 },
   // 技能
-  { id:'activeAll', name:'技能大師',   icon:'⚡', desc:'解鎖全部主動技能',                 xp:150 },
+  { id:'activeAll',      name:'技能大師',   icon:'⚡', desc:'解鎖全部主動技能',                          xp:150 },
+  { id:'skillPassiveAll',name:'全能王者',   icon:'🌈', desc:'解鎖全部被動技能',                          xp:300 },
+  { id:'usedAllActive',  name:'技能全施',   icon:'🎇', desc:'在任意關卡中使用過所有主動技能至少一次',      xp:250 },
+  // 財富
+  { id:'gold300k',       name:'富可敵國',   icon:'💎', desc:'在關卡結束時持有 300,000 金幣',              xp:400 },
+  // 收藏
+  { id:'gearCollectAll', name:'全裝完美',   icon:'🏅', desc:'擁有全部裝備',                              xp:500 },
   // 挑戰
   { id:'noHit',     name:'無傷通關',   icon:'🛡️', desc:'通關某一關時主角未受到任何傷害',     xp:200 },
   { id:'fortFull',  name:'堡壘無缺',   icon:'🏰', desc:'通關某一關時堡壘保持滿血',          xp:150 },
@@ -708,6 +714,7 @@ function checkAchievements(trigger){
     // 挑戰成就
     if(!heroTookDamage)                                  earn('noHit');
     if(gameGoldEarned>=5000)                             earn('gold5000');
+    if(typeof gold!=='undefined'&&gold>=300000)          earn('gold300k');
     const fort=typeof towers!=='undefined'?towers.find(t=>TOWER_TYPES[t.type].isFortress):null;
     if(fort&&fort.hp>=fort.maxHp)                        earn('fortFull');
   }
@@ -730,6 +737,11 @@ function checkAchievements(trigger){
 
   // 技能成就
   if(ACTIVE_SKILL_DEFS.every(s=>d.activeSkills.includes(s.id))) earn('activeAll');
+  if(SKILL_DEFS.every(s=>d.skills.includes(s.id)))              earn('skillPassiveAll');
+  if(ACTIVE_SKILL_DEFS.every(s=>(d.usedActiveSkills||[]).includes(s.id))) earn('usedAllActive');
+
+  // 裝備收藏成就
+  if(EQUIPMENT_DEFS.every(e=>d.equipment.includes(e.id)))       earn('gearCollectAll');
 
   if(newOnes.length>0){
     d.achievements=[...had];
@@ -794,9 +806,13 @@ const EQUIPMENT_DEFS = [
   {id:'h_e1',slot:'head', rarity:'epic',      icon:'🐉',name:'龍鱗冠',   stats:{hp:0.20,damage:0.12}},
   {id:'h_e2',slot:'head', rarity:'epic',      icon:'🌑',name:'暗影兜帽', stats:{atkSpeed:0.20,damage:0.15}},
   {id:'h_e3',slot:'head', rarity:'epic',      icon:'🔷',name:'秘銀戰盔', stats:{hp:0.25,atkSpeed:0.10}},
+  {id:'h_e4',slot:'head', rarity:'epic',      icon:'🔥',name:'火焰戰盔', stats:{damage:0.22,atkSpeed:0.14}},
+  {id:'h_e5',slot:'head', rarity:'epic',      icon:'🌿',name:'自然之冠', stats:{hp:0.18,speed:0.14,damage:0.08}},
   {id:'h_l1',slot:'head', rarity:'legendary', icon:'✨',name:'黃金王冠', stats:{hp:0.30,damage:0.18,atkSpeed:0.12}},
   {id:'h_l2',slot:'head', rarity:'legendary', icon:'😈',name:'惡魔角盔', stats:{damage:0.35,atkSpeed:0.20,speed:0.10}},
+  {id:'h_l3',slot:'head', rarity:'legendary', icon:'🌊',name:'海神頭盔', stats:{hp:0.25,atkSpeed:0.25,speed:0.12}},
   {id:'h_m1',slot:'head', rarity:'mythic',    icon:'🌟',name:'天神戰冠', stats:{hp:0.40,damage:0.25,atkSpeed:0.15,speed:0.10}},
+  {id:'h_m2',slot:'head', rarity:'mythic',    icon:'💀',name:'死神之冠', stats:{damage:0.45,atkSpeed:0.20,speed:0.15,hp:0.10}},
   // ── 胸甲 ──
   {id:'c_c1',slot:'chest',rarity:'common',    icon:'🦺',name:'皮革胸甲', stats:{hp:0.06}},
   {id:'c_c2',slot:'chest',rarity:'common',    icon:'👕',name:'布甲',     stats:{damage:0.05}},
@@ -810,9 +826,13 @@ const EQUIPMENT_DEFS = [
   {id:'c_e1',slot:'chest',rarity:'epic',      icon:'🐉',name:'龍鱗胸甲', stats:{hp:0.22,damage:0.14}},
   {id:'c_e2',slot:'chest',rarity:'epic',      icon:'🌑',name:'暗影護甲', stats:{damage:0.18,atkSpeed:0.15}},
   {id:'c_e3',slot:'chest',rarity:'epic',      icon:'💎',name:'秘銀鎧甲', stats:{hp:0.28,speed:0.08}},
+  {id:'c_e4',slot:'chest',rarity:'epic',      icon:'⚡',name:'雷神胸甲', stats:{damage:0.20,atkSpeed:0.18}},
+  {id:'c_e5',slot:'chest',rarity:'epic',      icon:'🌿',name:'翠玉護甲', stats:{hp:0.30,speed:0.08}},
   {id:'c_l1',slot:'chest',rarity:'legendary', icon:'☀️',name:'聖光胸甲', stats:{hp:0.35,damage:0.20,atkSpeed:0.10}},
   {id:'c_l2',slot:'chest',rarity:'legendary', icon:'🌑',name:'深淵鎧甲', stats:{damage:0.30,atkSpeed:0.22,hp:0.15}},
+  {id:'c_l3',slot:'chest',rarity:'legendary', icon:'🔥',name:'炎魔鎧甲', stats:{damage:0.28,atkSpeed:0.18,hp:0.20}},
   {id:'c_m1',slot:'chest',rarity:'mythic',    icon:'🌟',name:'神界鎧甲', stats:{hp:0.45,damage:0.20,atkSpeed:0.12,speed:0.08}},
+  {id:'c_m2',slot:'chest',rarity:'mythic',    icon:'👹',name:'魔王鎧甲', stats:{damage:0.35,hp:0.30,atkSpeed:0.15,speed:0.10}},
   // ── 腿甲 ──
   {id:'l_c1',slot:'legs', rarity:'common',    icon:'👖',name:'皮革腿甲', stats:{hp:0.04,speed:0.03}},
   {id:'l_c2',slot:'legs', rarity:'common',    icon:'👖',name:'布褲',     stats:{damage:0.04,speed:0.03}},
@@ -826,9 +846,13 @@ const EQUIPMENT_DEFS = [
   {id:'l_e1',slot:'legs', rarity:'epic',      icon:'🐉',name:'龍鱗腿甲', stats:{hp:0.20,speed:0.12}},
   {id:'l_e2',slot:'legs', rarity:'epic',      icon:'🌑',name:'暗影護腿', stats:{damage:0.15,speed:0.18}},
   {id:'l_e3',slot:'legs', rarity:'epic',      icon:'💎',name:'秘銀腿甲', stats:{hp:0.25,damage:0.10}},
+  {id:'l_e4',slot:'legs', rarity:'epic',      icon:'⚡',name:'雷霆護腿', stats:{speed:0.16,atkSpeed:0.18}},
+  {id:'l_e5',slot:'legs', rarity:'epic',      icon:'🔥',name:'熔岩腿甲', stats:{damage:0.18,hp:0.18,speed:0.06}},
   {id:'l_l1',slot:'legs', rarity:'legendary', icon:'⚡',name:'雷神護腿', stats:{speed:0.25,damage:0.18,atkSpeed:0.15}},
   {id:'l_l2',slot:'legs', rarity:'legendary', icon:'🛡️',name:'聖騎腿甲', stats:{hp:0.32,speed:0.18,damage:0.12}},
+  {id:'l_l3',slot:'legs', rarity:'legendary', icon:'🌊',name:'潮汐護腿', stats:{speed:0.28,hp:0.20,atkSpeed:0.18}},
   {id:'l_m1',slot:'legs', rarity:'mythic',    icon:'🌟',name:'神話步伐', stats:{speed:0.35,hp:0.30,damage:0.15,atkSpeed:0.10}},
+  {id:'l_m2',slot:'legs', rarity:'mythic',    icon:'💫',name:'星辰步甲', stats:{damage:0.25,speed:0.40,hp:0.20,atkSpeed:0.10}},
   // ── 鞋子 ──
   {id:'b_c1',slot:'boots',rarity:'common',    icon:'👟',name:'皮靴',     stats:{speed:0.05}},
   {id:'b_c2',slot:'boots',rarity:'common',    icon:'👟',name:'布鞋',     stats:{speed:0.04,hp:0.03}},
@@ -842,9 +866,13 @@ const EQUIPMENT_DEFS = [
   {id:'b_e1',slot:'boots',rarity:'epic',      icon:'🦴',name:'龍骨靴',   stats:{speed:0.20,hp:0.14}},
   {id:'b_e2',slot:'boots',rarity:'epic',      icon:'🌑',name:'暗影靴',   stats:{speed:0.22,damage:0.12}},
   {id:'b_e3',slot:'boots',rarity:'epic',      icon:'🌪️',name:'風神靴',   stats:{speed:0.25,atkSpeed:0.12}},
+  {id:'b_e4',slot:'boots',rarity:'epic',      icon:'🔥',name:'烈焰靴',   stats:{speed:0.18,damage:0.14,atkSpeed:0.10}},
+  {id:'b_e5',slot:'boots',rarity:'epic',      icon:'🌿',name:'自然之靴', stats:{speed:0.22,hp:0.16}},
   {id:'b_l1',slot:'boots',rarity:'legendary', icon:'⚡',name:'閃電之靴', stats:{speed:0.30,atkSpeed:0.20,damage:0.10}},
   {id:'b_l2',slot:'boots',rarity:'legendary', icon:'✨',name:'聖者步履', stats:{speed:0.28,hp:0.22,damage:0.12}},
+  {id:'b_l3',slot:'boots',rarity:'legendary', icon:'🌊',name:'海神之靴', stats:{speed:0.32,atkSpeed:0.18,hp:0.15}},
   {id:'b_m1',slot:'boots',rarity:'mythic',    icon:'🌟',name:'神話疾風靴',stats:{speed:0.40,atkSpeed:0.20,damage:0.15,hp:0.15}},
+  {id:'b_m2',slot:'boots',rarity:'mythic',    icon:'🕳️',name:'虛空之靴', stats:{speed:0.42,damage:0.18,atkSpeed:0.22,hp:0.12}},
 ];
 window.RARITY_INFO     = RARITY_INFO;
 window.EQUIPMENT_DEFS  = EQUIPMENT_DEFS;
@@ -913,8 +941,9 @@ function loadPlayerData(){
       equippedGear:{head:d.equippedGear?.head||null,chest:d.equippedGear?.chest||null,legs:d.equippedGear?.legs||null,boots:d.equippedGear?.boots||null},
       achievements:Array.isArray(d.achievements)?d.achievements:[],
       stats:{totalKills:d.stats?.totalKills||0,bossKills:d.stats?.bossKills||0,ghostKills:d.stats?.ghostKills||0},
+      usedActiveSkills:Array.isArray(d.usedActiveSkills)?d.usedActiveSkills:[],
     };
-  }catch(e){return {xp:0,upgrades:{hp:0,damage:0,atkSpeed:0,speed:0},skills:[],equippedSkills:[],activeSkills:[],activeSlots:[null,null,null],equipment:[],equippedGear:{head:null,chest:null,legs:null,boots:null},achievements:[],stats:{totalKills:0,bossKills:0,ghostKills:0}};}
+  }catch(e){return {xp:0,upgrades:{hp:0,damage:0,atkSpeed:0,speed:0},skills:[],equippedSkills:[],activeSkills:[],activeSlots:[null,null,null],equipment:[],equippedGear:{head:null,chest:null,legs:null,boots:null},achievements:[],stats:{totalKills:0,bossKills:0,ghostKills:0},usedActiveSkills:[]};}
 }
 function savePlayerData(d){localStorage.setItem(PLAYER_KEY,JSON.stringify(d));}
 // 安靜地加XP（不打斷遊戲訊息）；返回新總量
@@ -1191,6 +1220,14 @@ class Hero {
     if(now<this.skillCooldowns[slotIdx]){ showMessage('⏳ 技能冷卻中...',800); return; }
     const def=ACTIVE_SKILL_DEFS.find(s=>s.id===skillId); if(!def) return;
     this.skillCooldowns[slotIdx]=now+def.cooldown;
+    // 記錄已使用過的主動技能（用於成就追蹤）
+    { const _pd=loadPlayerData();
+      if(!(_pd.usedActiveSkills||[]).includes(skillId)){
+        _pd.usedActiveSkills=(_pd.usedActiveSkills||[]).concat(skillId);
+        savePlayerData(_pd);
+        checkAchievements('skillUse');
+      }
+    }
     switch(skillId){
       case 'whirlwind':{
         const r=3*CELL_SIZE; let hit=0;
@@ -1998,10 +2035,14 @@ class Tower {
       const effInterval=this.trainInterval*(researchDone.has('trainSpeed')?0.65:1);
       const myUnits=friendlyUnits.filter(u=>u.source===this&&!u.dead);
       if(myUnits.length<this.maxUnits&&now-this.lastTick>=effInterval){
+        const unitType=this.trainUnitType||'infantry';
+        const unitCost=FRIENDLY_UNIT_TYPES[unitType].cost||0;
+        if(gold<unitCost){ return; }
         this.lastTick=now;
+        gold-=unitCost;
         const angle=Math.random()*Math.PI*2;
         friendlyUnits.push(new FriendlyUnit(
-          this.trainUnitType||'infantry',
+          unitType,
           this.x+Math.cos(angle)*CELL_SIZE*0.7,
           this.y+Math.sin(angle)*CELL_SIZE*0.7,
           this
@@ -2523,7 +2564,7 @@ function updateMobilePanel(){
     for(const ut of available){
       const uD=FRIENDLY_UNIT_TYPES[ut];
       const sel=(t.trainUnitType||'infantry')===ut;
-      html+=`<button class="mp-unit-btn${sel?' mp-unit-btn-sel':''}" onclick="mobileSelectUnit('${ut}')">${uD.emoji} ${uD.name}  HP:${uD.hp}  ATK:${uD.damage}</button>`;
+      html+=`<button class="mp-unit-btn${sel?' mp-unit-btn-sel':''}" onclick="mobileSelectUnit('${ut}')">${uD.emoji} ${uD.name}  HP:${uD.hp}  ATK:${uD.damage}  💰${uD.cost}</button>`;
     }
     html+='</div>';
   }
@@ -2730,7 +2771,7 @@ function drawTrainingPanel(t, def, now){
     ctx.textAlign='left'; ctx.textBaseline='middle';
     ctx.fillText(`${uD.emoji} ${uD.name}`, bx+10, by+btnH/2);
     ctx.textAlign='right'; ctx.fillStyle='#777';
-    ctx.fillText(`HP:${uD.hp} ATK:${uD.damage}`, bx+bw-8, by+btnH/2);
+    ctx.fillText(`HP:${uD.hp} ATK:${uD.damage}  💰${uD.cost}`, bx+bw-8, by+btnH/2);
     trainUnitButtonBounds.push({x:bx,y:by,w:bw,h:btnH,unitType:ut});
     iy+=btnH+btnGap;
   }
